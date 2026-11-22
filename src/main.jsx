@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { ArrowLeft, ArrowRight, BookOpen, Check, ChevronRight, CircleHelp, Code2, Copy, ExternalLink, FolderKanban, GitBranch, LayoutDashboard, Menu, Moon, Play, RotateCcw, Settings, Sun, Terminal, X, Layers3 } from 'lucide-react';
 import { availableLessons, chapters, flashcards, lessons, projects } from './content.js';
 import './styles.css';
 
@@ -11,6 +12,7 @@ const defaultProgress = {
   lastLesson: 'why-plainscript',
   flashcardIndex: 0,
   reviewedCards: [],
+  theme: 'light',
 };
 
 function loadProgress() {
@@ -26,6 +28,7 @@ function useProgress() {
   const [progress, setProgress] = useState(loadProgress);
   useEffect(() => {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+    document.documentElement.dataset.theme = progress.theme || 'light';
   }, [progress]);
   const update = (patch) => setProgress((current) => ({ ...current, ...patch }));
   const completeLesson = (id) => setProgress((current) => ({
@@ -38,7 +41,9 @@ function useProgress() {
     completedChallenges: current.completedChallenges.includes(id) ? current.completedChallenges : [...current.completedChallenges, id],
   }));
   const saveQuiz = (id, score) => setProgress((current) => ({ ...current, quizScores: { ...current.quizScores, [id]: score } }));
-  return { progress, update, completeLesson, completeChallenge, saveQuiz };
+  const resetProgress = () => setProgress({ ...defaultProgress, theme: progress.theme || 'light' });
+  const toggleTheme = () => setProgress((current) => ({ ...current, theme: current.theme === 'dark' ? 'light' : 'dark' }));
+  return { progress, update, completeLesson, completeChallenge, saveQuiz, resetProgress, toggleTheme };
 }
 
 function routePath() {
@@ -46,20 +51,9 @@ function routePath() {
 }
 
 function Icon({ name, size = 18 }) {
-  const paths = {
-    arrow: <><path d="M4 9h11" /><path d="m10 4 5 5-5 5" /></>,
-    check: <><path d="m4 9 3 3 7-7" /></>,
-    play: <path d="m6 4 10 5-10 5V4Z" />,
-    book: <><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H17v14H6.5A2.5 2.5 0 0 0 4 18.5v-14Z" /><path d="M4 18.5A2.5 2.5 0 0 1 6.5 16H17" /></>,
-    grid: <><rect x="3" y="3" width="6" height="6" /><rect x="13" y="3" width="6" height="6" /><rect x="3" y="13" width="6" height="6" /><rect x="13" y="13" width="6" height="6" /></>,
-    cards: <><rect x="5" y="3" width="12" height="15" rx="1" /><path d="M3 6v11a2 2 0 0 0 2 2h10" /></>,
-    layers: <><path d="m3 8 8-5 8 5-8 5-8-5Z" /><path d="m3 12 8 5 8-5" /></>,
-    menu: <><path d="M3 6h18" /><path d="M3 12h18" /><path d="M3 18h18" /></>,
-    close: <><path d="m5 5 14 14" /><path d="m19 5-14 14" /></>,
-    external: <><path d="M14 4h6v6" /><path d="M20 4 11 13" /><path d="M18 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5" /></>,
-    refresh: <><path d="M20 11a8 8 0 1 0 2 5" /><path d="M20 4v7h-7" /></>,
-  };
-  return <svg className="icon" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
+  const icons = { arrow: ArrowRight, back: ArrowLeft, check: Check, play: Play, book: BookOpen, grid: LayoutDashboard, cards: Layers3, layers: FolderKanban, menu: Menu, close: X, external: ExternalLink, refresh: RotateCcw, settings: Settings, sun: Sun, moon: Moon, help: CircleHelp, code: Code2, terminal: Terminal, copy: Copy, git: GitBranch, chevron: ChevronRight };
+  const LucideIcon = icons[name] || Code2;
+  return <LucideIcon className="icon" size={size} strokeWidth={1.8} aria-hidden="true" />;
 }
 
 function Logo({ onNavigate }) {
@@ -134,8 +128,9 @@ function Feature({ number, title, text, icon }) {
   return <article className="feature"><span className="feature-number">{number}</span><Icon name={icon} size={22} /><h3>{title}</h3><p>{text}</p></article>;
 }
 
-function AppShell({ onNavigate, children, currentPath, progress }) {
+function AppShell({ onNavigate, children, currentPath, progress, toggleTheme, resetProgress }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const navigate = (path) => { onNavigate(path); setMobileOpen(false); };
   const completeCount = progress.completedLessons.length;
   const percent = Math.round((completeCount / availableLessons.length) * 100);
@@ -154,8 +149,12 @@ function AppShell({ onNavigate, children, currentPath, progress }) {
       <div className="sidebar-foot"><span className="mini-mark">P</span><div><b>PlainScript 2.2</b><small>Independent language / MIT</small></div></div>
     </aside>
     {mobileOpen && <button className="sidebar-scrim" onClick={() => setMobileOpen(false)} aria-label="Close navigation" />}
-    <div className="app-main"><header className="app-header"><button className="mobile-menu" onClick={() => setMobileOpen(true)} aria-label="Open course navigation"><Icon name="menu" /></button><Logo onNavigate={navigate} /><nav className="app-nav"><button onClick={() => navigate('/learn')}>Course</button><button onClick={() => navigate('/flashcards')}>Flashcards</button><button onClick={() => navigate('/projects')}>Projects</button></nav><div className="header-actions"><span className="status-dot" /> Saved locally <button className="settings-button" onClick={() => setMobileOpen(true)}>Settings</button></div></header><div className="app-content">{children}</div><footer className="lesson-footer"><Button onClick={() => window.history.back()}>↩ Back</Button><Button variant="dark" onClick={() => onNavigate(currentPath === '/learn' ? `/learn/${availableLessons[0].id}` : '/learn')}>Next ↪</Button><button className="help-button">Help <span>?</span></button></footer></div>
+    <div className="app-main"><header className="app-header"><button className="mobile-menu" onClick={() => setMobileOpen(true)} aria-label="Open course navigation"><Icon name="menu" /></button><Logo onNavigate={navigate} /><nav className="app-nav"><button className={currentPath === '/learn' ? 'active' : ''} onClick={() => navigate('/learn')}>Course</button><button className={currentPath === '/flashcards' ? 'active' : ''} onClick={() => navigate('/flashcards')}>Flashcards</button><button className={currentPath === '/projects' ? 'active' : ''} onClick={() => navigate('/projects')}>Projects</button></nav><div className="header-actions"><span className="status-dot" /> Saved locally <button className="icon-button" onClick={() => setSettingsOpen(true)} aria-label="Open settings"><Icon name="settings" size={16} /></button></div></header><div className="app-content">{children}</div>{settingsOpen && <SettingsPanel theme={progress.theme || 'light'} toggleTheme={toggleTheme} resetProgress={resetProgress} onClose={() => setSettingsOpen(false)} />}<footer className="lesson-footer"><Button onClick={() => window.history.back()} icon="back">Back</Button><Button variant="dark" onClick={() => onNavigate(currentPath.startsWith('/learn/') ? `/learn/${availableLessons[Math.min(availableLessons.findIndex((lesson) => currentPath.endsWith(lesson.id)) + 1, availableLessons.length - 1)].id}` : `/learn/${availableLessons[0].id}`)} icon="arrow">Next</Button><button className="help-button">Help <Icon name="help" size={15} /></button></footer></div>
   </div>;
+}
+
+function SettingsPanel({ theme, toggleTheme, resetProgress, onClose }) {
+  return <div className="settings-backdrop" role="presentation" onClick={onClose}><aside className="settings-panel" role="dialog" aria-modal="true" aria-label="Settings" onClick={(event) => event.stopPropagation()}><div className="settings-head"><div><p className="eyebrow">Workspace</p><h2>Settings</h2></div><button className="icon-button" onClick={onClose} aria-label="Close settings"><Icon name="close" /></button></div><div className="settings-row"><div><b>Appearance</b><small>Choose how LearnPlainScript looks in this browser.</small></div><button className="theme-toggle" onClick={toggleTheme}><Icon name={theme === 'dark' ? 'moon' : 'sun'} size={15} />{theme === 'dark' ? 'Dark' : 'Light'}</button></div><div className="settings-row"><div><b>Reset progress</b><small>Clear lessons, challenges, quiz answers, and flashcard review.</small></div><button className="danger-button" onClick={resetProgress}>Reset</button></div><p className="settings-note">Your learning state is stored locally. No account is required.</p></aside></div>;
 }
 
 function NavItem({ children, active, onClick, icon }) {
@@ -184,7 +183,7 @@ function highlightInline(text) {
 }
 
 function CodeBlock({ code }) {
-  return <div className="code-block"><div className="code-block-head"><span>PlainScript</span><button onClick={() => navigator.clipboard?.writeText(code)}>Copy</button></div><pre><code>{code}</code></pre></div>;
+  return <div className="code-block"><div className="code-block-head"><span>PlainScript</span><button onClick={() => navigator.clipboard?.writeText(code)}><Icon name="copy" size={14} />Copy</button></div><pre><code>{code}</code></pre></div>;
 }
 
 function Playground({ lesson, progress, completeChallenge }) {
@@ -244,7 +243,7 @@ function NotFound({ onNavigate }) {
 
 function App() {
   const [path, setPath] = useState(routePath);
-  const { progress, update, completeLesson, completeChallenge, saveQuiz } = useProgress();
+  const { progress, update, completeLesson, completeChallenge, saveQuiz, resetProgress, toggleTheme } = useProgress();
   useEffect(() => { const onPopState = () => setPath(routePath()); window.addEventListener('popstate', onPopState); return () => window.removeEventListener('popstate', onPopState); }, []);
   const navigate = (nextPath) => { window.history.pushState({}, '', nextPath); setPath(nextPath); window.scrollTo({ top: 0, behavior: 'smooth' }); };
   if (path === '/') return <LandingPage onNavigate={navigate} />;
@@ -257,7 +256,7 @@ function App() {
     const lesson = lessons.find((item) => item.id === id);
     page = !lesson ? <NotFound onNavigate={navigate} /> : lesson.comingSoon ? <ComingSoon onNavigate={navigate} /> : <LessonPage lesson={lesson} progress={progress} onNavigate={navigate} completeLesson={completeLesson} completeChallenge={completeChallenge} saveQuiz={saveQuiz} />;
   } else page = <NotFound onNavigate={navigate} />;
-  return <AppShell onNavigate={navigate} currentPath={path} progress={progress}>{page}</AppShell>;
+  return <AppShell onNavigate={navigate} currentPath={path} progress={progress} resetProgress={resetProgress} toggleTheme={toggleTheme}>{page}</AppShell>;
 }
 
 createRoot(document.getElementById('root')).render(<App />);

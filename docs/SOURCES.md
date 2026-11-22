@@ -14,4 +14,6 @@ The published dependency used by the playground is `plainscript-lang@2.2.0`, ins
 
 ## UI reference notes
 
-The public Learn JavaScript Online landing page and course app were inspected on 22 November 2026. The redesign follows its observable interaction language: Inter typography, white lesson canvas, dark compact top bar, yellow emphasis, teal primary actions, centered onboarding hero, a course navigation drawer, and fixed bottom Back/Next/Help controls. LearnPlainScript does not copy the reference site's source code, lesson content, illustrations, account system, or proprietary assets.
+The public Learn JavaScript Online landing page and course app were inspected on 22 November 2026. Its short lesson rhythm, practice-first progression, course navigation drawer, and fixed bottom Back/Next/Help controls informed the UX. React Learn, javascript.info, MDN Learn, Vercel, and shadcn/ui were also consulted for documentation navigation, readable code examples, structured learning modules, compact developer surfaces, accessible controls, and theme patterns. LearnPlainScript does not copy these sites' source code, lesson content, illustrations, account systems, or proprietary assets.
+
+The visual identity is based on the published PlainScript manual stylesheet rather than the UI references: near-black surfaces (`#08070b`, `#121017`), bone text (`#f2eee7`), violet (`#a679ff`), ember (`#ff6a3d`), and acid green (`#d8f26b`), with the documented code syntax colors. Geist and Geist Mono are self-hosted in `public/fonts/` for reliable Vite/Vercel delivery.
