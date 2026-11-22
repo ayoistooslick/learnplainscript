@@ -11,3 +11,7 @@ LearnPlainScript uses the following public sources as references, not as copied 
 - [PlainScript JavaScript interop](https://ayoistooslick.github.io/plainscript/interop.html) — verified interoperability positioning and ordinary ES module output.
 
 The published dependency used by the playground is `plainscript-lang@2.2.0`, installed from npm and exercised by `npm run check:plain` and the automated tests.
+
+## UI reference notes
+
+The public Learn JavaScript Online landing page and course app were inspected on 22 November 2026. The redesign follows its observable interaction language: Inter typography, white lesson canvas, dark compact top bar, yellow emphasis, teal primary actions, centered onboarding hero, a course navigation drawer, and fixed bottom Back/Next/Help controls. LearnPlainScript does not copy the reference site's source code, lesson content, illustrations, account system, or proprietary assets.

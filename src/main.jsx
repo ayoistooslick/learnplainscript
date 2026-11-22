@@ -63,7 +63,7 @@ function Icon({ name, size = 18 }) {
 }
 
 function Logo({ onNavigate }) {
-  return <button className="wordmark" onClick={() => onNavigate('/')} aria-label="LearnPlainScript home"><span>Learn</span>PlainScript<i>.</i></button>;
+  return <button className="wordmark" onClick={() => onNavigate('/')} aria-label="LearnPlainScript home"><span className="brand-mark">P</span><strong>LearnPlainScript</strong></button>;
 }
 
 function Button({ children, onClick, variant = 'secondary', icon, className = '', disabled = false }) {
@@ -154,7 +154,7 @@ function AppShell({ onNavigate, children, currentPath, progress }) {
       <div className="sidebar-foot"><span className="mini-mark">P</span><div><b>PlainScript 2.2</b><small>Independent language / MIT</small></div></div>
     </aside>
     {mobileOpen && <button className="sidebar-scrim" onClick={() => setMobileOpen(false)} aria-label="Close navigation" />}
-    <div className="app-main"><header className="app-header"><button className="mobile-menu" onClick={() => setMobileOpen(true)} aria-label="Open course navigation"><Icon name="menu" /></button><div className="crumbs"><span>LearnPlainScript</span><i>/</i><b>{currentPath === '/learn' ? 'Dashboard' : currentPath === '/flashcards' ? 'Flashcards' : currentPath === '/projects' ? 'Projects' : 'Course'}</b></div><div className="header-actions"><span className="status-dot" /> Saved locally <a href="https://github.com/ayoistooslick/plainscript" target="_blank" rel="noreferrer" aria-label="Open PlainScript source"><Icon name="external" size={15} /></a></div></header><div className="app-content">{children}</div></div>
+    <div className="app-main"><header className="app-header"><button className="mobile-menu" onClick={() => setMobileOpen(true)} aria-label="Open course navigation"><Icon name="menu" /></button><Logo onNavigate={navigate} /><nav className="app-nav"><button onClick={() => navigate('/learn')}>Course</button><button onClick={() => navigate('/flashcards')}>Flashcards</button><button onClick={() => navigate('/projects')}>Projects</button></nav><div className="header-actions"><span className="status-dot" /> Saved locally <button className="settings-button" onClick={() => setMobileOpen(true)}>Settings</button></div></header><div className="app-content">{children}</div><footer className="lesson-footer"><Button onClick={() => window.history.back()}>↩ Back</Button><Button variant="dark" onClick={() => onNavigate(currentPath === '/learn' ? `/learn/${availableLessons[0].id}` : '/learn')}>Next ↪</Button><button className="help-button">Help <span>?</span></button></footer></div>
   </div>;
 }
 
