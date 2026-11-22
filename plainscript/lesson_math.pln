@@ -1,0 +1,11 @@
+#syntax 2.1
+
+import { print } from "std/io"
+
+# This file is part of LearnPlainScript's own compiler checks.
+define describeTotal(left: number, right: number) returns text
+    value total is left + right
+    return "The total is {total}."
+end
+
+print(describeTotal(3, 4))

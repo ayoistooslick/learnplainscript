@@ -1,0 +1,26 @@
+{
+  "name": "learnplainscript",
+  "version": "1.0.0",
+  "private": false,
+  "description": "A practical interactive course for PlainScript 2.2.",
+  "type": "module",
+  "packageManager": "pnpm@10.15.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "node server/index.js",
+    "build": "vite build",
+    "start": "node server/index.js",
+    "check:plain": "node scripts/check-plainscript.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "express": "^5.1.0",
+    "plainscript-lang": "2.2.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "vite": "^6.3.5"
+  }
+}

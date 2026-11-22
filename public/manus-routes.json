@@ -1,0 +1,9 @@
+{
+  "routes": [
+    { "path": "/", "title": "LearnPlainScript" },
+    { "path": "/learn", "title": "Learning dashboard" },
+    { "path": "/learn/:lessonId", "title": "PlainScript lesson" },
+    { "path": "/flashcards", "title": "PlainScript flashcards" },
+    { "path": "/projects", "title": "PlainScript projects" }
+  ]
+}
