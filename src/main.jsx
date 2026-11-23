@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { ArrowRight, Check, Menu, Play, RotateCcw, X } from 'lucide-react';
+import { Check, Menu, Play, RotateCcw, X } from 'lucide-react';
 import { availableLessons, chapters, flashcards, projects } from './content.js';
 import { homepageSpecimen, playgroundExamples } from './examples.js';
 import { CodeSpecimen, Inline, Tokens } from './highlight.jsx';
@@ -74,6 +74,7 @@ const CHAPTER_PLATES = [
   'sheet', 'hands', 'chrome', 'voice',
 ];
 const CROPS = ['50% 32%', '50% 45%', '40% 50%', '58% 38%', '50% 55%'];
+const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX'];
 
 function plateForChapter(number) {
   return CHAPTER_PLATES[(Number(number) - 1) % CHAPTER_PLATES.length] || 'figure';
@@ -129,7 +130,7 @@ function useProgress() {
   return { progress, completeLesson, completeChallenge, saveQuiz, recordExam, markReviewed, setCardIndex, resetProgress };
 }
 
-/* ---------- shell pieces ---------- */
+/* ---------- shared editorial pieces ---------- */
 
 function useReveal() {
   const ref = useRef(null);
@@ -154,9 +155,30 @@ function Reveal({ children, className = '' }) {
   return <div ref={reveal.ref} className={`${reveal.className} ${className}`.trim()}>{children}</div>;
 }
 
+function RunningHead({ index, section, meta }) {
+  return (
+    <div className="running-head">
+      <span className="rh-index">{index}</span>
+      <span className="rh-section">{section}</span>
+      <span className="rh-meta">{meta}</span>
+    </div>
+  );
+}
+
+function BandLabel({ index, children }) {
+  return (
+    <div className="band-label">
+      <span className="bl-index">{index}</span>
+      <span className="bl-rule" aria-hidden="true" />
+      <span className="bl-text">{children}</span>
+    </div>
+  );
+}
+
 function Wordmark({ navigate, top = false }) {
   return (
     <button type="button" className={top ? 'top-brand' : 'wordmark'} onClick={() => navigate('/')}>
+      <span className="wm-square" aria-hidden="true" />
       LearnPlainScript<span className="dot">.</span>
     </button>
   );
@@ -177,10 +199,9 @@ function Rail({ path, navigate, progress, onClose, open }) {
   return (
     <aside className={`rail${open ? ' is-open' : ''}`} id="rail" aria-label="Course contents">
       <div className="rail-head">
+        <span className="rail-issue">An independent course · Issue 01</span>
         <Wordmark navigate={navigate} />
-        <div className="rail-meta">
-          Interactive course<br />Vol. 2.3.1 · MMXXVI
-        </div>
+        <p className="rail-sub">Read and run PlainScript<br />2.3.1 · MMXXVI</p>
         <button type="button" className="rail-close" onClick={onClose} aria-label="Close contents">
           <X size={18} strokeWidth={1.6} aria-hidden="true" />
         </button>
@@ -188,15 +209,15 @@ function Rail({ path, navigate, progress, onClose, open }) {
 
       <nav className="rail-nav" aria-label="Learning contents">
         <div className="nav-group">
-          <div className="nav-label">Start here</div>
+          <div className="nav-label">The book</div>
           <NavLink active={path === '/'} onClick={() => navigate('/')}>Cover</NavLink>
           <NavLink active={path === '/learn'} onClick={() => navigate('/learn')}>Contents</NavLink>
-          <NavLink active={path === '/playground'} onClick={() => navigate('/playground')}>Playground</NavLink>
+          <NavLink active={path === '/playground'} onClick={() => navigate('/playground')}>The bench</NavLink>
           <NavLink active={path === '/quiz'} onClick={() => navigate('/quiz')}>Examination</NavLink>
         </div>
 
         <div className="nav-group">
-          <div className="nav-label">Curriculum</div>
+          <div className="nav-label">Lessons</div>
           {availableLessons.map((lesson) => (
             <NavLink
               key={lesson.id}
@@ -210,8 +231,8 @@ function Rail({ path, navigate, progress, onClose, open }) {
         </div>
 
         <div className="nav-group">
-          <div className="nav-label">Reference</div>
-          <NavLink active={path === '/flashcards'} onClick={() => navigate('/flashcards')}>Revision cards</NavLink>
+          <div className="nav-label">End matter</div>
+          <NavLink active={path === '/flashcards'} onClick={() => navigate('/flashcards')}>Revision deck</NavLink>
           <NavLink active={path === '/projects'} onClick={() => navigate('/projects')}>Commissions</NavLink>
         </div>
       </nav>
@@ -233,7 +254,7 @@ function Rail({ path, navigate, progress, onClose, open }) {
   );
 }
 
-function Shell({ path, navigate, progress, railOpen, setRailOpen, crumb, children }) {
+function Shell({ path, navigate, progress, railOpen, setRailOpen, crumb, pageMeta, children }) {
   const [reading, setReading] = useState(0);
 
   useEffect(() => {
@@ -274,10 +295,9 @@ function Shell({ path, navigate, progress, railOpen, setRailOpen, crumb, childre
           </button>
           <Wordmark navigate={go} top />
           <span className="crumb">
-            {crumb ? <><b>{crumb[0]}</b><span className="slash">/</span>{crumb[1]}</> : <><b>LearnPlainScript</b><span className="slash">/</span>Manual</>}
+            {crumb ? <><b>{crumb[0]}</b><span className="slash">/</span>{crumb[1]}</> : <><b>LearnPlainScript</b><span className="slash">/</span>Course</>}
           </span>
-          <span className="top-meta">2.3.1</span>
-          <a className="top-github" href="https://github.com/ayoistooslick/plainscript" target="_blank" rel="noreferrer">Source ↗</a>
+          <span className="top-page">p. {pageMeta}</span>
           <div className="progress" aria-hidden="true"><span style={{ width: `${reading}%` }} /></div>
         </header>
 
@@ -292,63 +312,35 @@ function Shell({ path, navigate, progress, railOpen, setRailOpen, crumb, childre
 
 function Colophon({ navigate }) {
   return (
-    <footer className="colophon">
-      <div>
-        <div className="colophon-mark">LearnPlainScript<span>.</span></div>
-        <p>
-          An independent, interactive companion to the PlainScript manual. Set in Fraunces, Newsreader,
-          Space Grotesk and IBM Plex Mono. Halftone plates are drawn in-house for PlainScript, with new
-          plates made for this course. One stylesheet, no trackers.
-        </p>
+    <footer className="end">
+      <div className="end-mark" aria-hidden="true">∎</div>
+      <div className="end-grid">
+        <div className="end-brand">
+          <b>LearnPlainScript<span>.</span></b>
+          <p>
+            An interactive course for PlainScript 2.3.1. This is an independent companion to the
+            PlainScript manual, not a mirror of it. Set in Fraunces, Newsreader, Space Grotesk and
+            IBM Plex Mono.
+          </p>
+        </div>
+        <nav className="end-links" aria-label="Project links">
+          <button type="button" onClick={() => navigate('/learn')}>Contents</button>
+          <button type="button" onClick={() => navigate('/playground')}>The bench</button>
+          <a href="https://ayoistooslick.github.io/plainscript/" target="_blank" rel="noreferrer">Manual</a>
+          <a href="https://github.com/ayoistooslick/plainscript" target="_blank" rel="noreferrer">Source</a>
+          <a href="https://github.com/ayoistooslick/plainscript/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a>
+        </nav>
+        <div className="end-fine">
+          <span>Plates I–V from the PlainScript manual, MIT.</span>
+          <span>Plates VI–VIII made for this course.</span>
+          <span>One stylesheet, no trackers.</span>
+        </div>
       </div>
-      <nav className="colophon-links" aria-label="Project links">
-        <button type="button" onClick={() => navigate('/learn')}>Contents</button>
-        <a href="https://ayoistooslick.github.io/plainscript/" target="_blank" rel="noreferrer">Manual</a>
-        <a href="https://github.com/ayoistooslick/plainscript" target="_blank" rel="noreferrer">Source</a>
-        <a href="https://github.com/ayoistooslick/plainscript/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a>
-        <button type="button" onClick={() => navigate('/projects')}>Commissions</button>
-      </nav>
+      <div className="end-turn">
+        <span>Turn back to the beginning</span>
+        <button type="button" onClick={() => navigate('/learn')}>Open the contents <span aria-hidden="true">→</span></button>
+      </div>
     </footer>
-  );
-}
-
-/* ---------- artwork ---------- */
-
-function Plate({ plateKey, fig, className = '', crop, eager = false }) {
-  const plate = PLATES[plateKey] || PLATES.figure;
-  const ref = useRef(null);
-
-  const tilt = (event) => {
-    const node = ref.current;
-    if (!node || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const box = node.getBoundingClientRect();
-    const x = (event.clientX - box.left) / box.width - 0.5;
-    const y = (event.clientY - box.top) / box.height - 0.5;
-    node.style.setProperty('--ry', `${(x * 5).toFixed(2)}deg`);
-    node.style.setProperty('--rx', `${(-y * 4).toFixed(2)}deg`);
-  };
-  const settle = () => {
-    const node = ref.current;
-    if (!node) return;
-    node.style.setProperty('--ry', '0deg');
-    node.style.setProperty('--rx', '0deg');
-  };
-
-  return (
-    <figure className={`art-plate ${className}`.trim()} ref={ref} onMouseMove={tilt} onMouseLeave={settle}>
-      <div className="art-plate__frame">
-        <img
-          src={plate.src}
-          alt={plate.alt}
-          width="1024"
-          height="1024"
-          loading={eager ? 'eager' : 'lazy'}
-          decoding="async"
-          style={crop ? { objectPosition: crop } : undefined}
-        />
-      </div>
-      <figcaption><b>Fig. {fig}</b><span>{plate.title}</span><b>{plate.medium}</b></figcaption>
-    </figure>
   );
 }
 
@@ -453,12 +445,12 @@ function Output({ result, compact = false }) {
   );
 }
 
-/* ---------- landing ---------- */
+/* ---------- cover ---------- */
 
 const CODE_TABS = [
-  { id: 'src', label: 'hello.pln', lang: 'plainscript' },
-  { id: 'out', label: 'hello.js', lang: 'javascript' },
-  { id: 'cli', label: 'terminal', lang: 'sh' },
+  { id: 'src', label: 'hello.pln' },
+  { id: 'out', label: 'hello.js' },
+  { id: 'cli', label: 'terminal' },
 ];
 
 function CodeTabs() {
@@ -504,295 +496,316 @@ print(greet("world"));`;
   );
 }
 
-function HomeLab() {
-  const [code, setCode] = useState(homepageSpecimen);
-  const { result, run } = useRunner();
-  return (
-    <section className="home-lab">
-      <div className="home-lab__copy">
-        <div className="section-mark"><span>Try it</span>A live compiler</div>
-        <h2>Write a sentence.<br /><em>Run it.</em></h2>
-        <p>
-          This is not a simulation. Every Run calls the published PlainScript 2.3.1 compiler in a
-          short-lived process, then returns the program’s real output or its real diagnostics.
-        </p>
-        <ul className="checklist compact">
-          <li>Edit the greeting and run it again.</li>
-          <li>Break the string and read the compiler’s answer.</li>
-          <li>Open the playground when you want a full desk.</li>
-        </ul>
-        <div className="lab-actions">
-          <button type="button" className="btn-primary" onClick={() => run(code)} disabled={result.status === 'running'}>
-            <Play size={14} strokeWidth={2} aria-hidden="true" /> Run program
-          </button>
-          <span className="lab-hint">⌘/Ctrl + Enter also runs</span>
-        </div>
-      </div>
-      <div
-        className="home-lab__window"
-        onKeyDown={(event) => {
-          if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') { event.preventDefault(); run(code); }
-        }}
-      >
-        <Editor code={code} onChange={setCode} label="try-it.pln" minHeight="220px" />
-        <Output result={result} compact />
-      </div>
-    </section>
-  );
-}
-
-function Landing({ navigate, progress }) {
+function Cover({ navigate, progress }) {
   const done = progress.completedLessons.length;
-  const percent = Math.round((done / availableLessons.length) * 100);
   const nextLesson = availableLessons.find((lesson) => !progress.completedLessons.includes(lesson.id)) || availableLessons[0];
-  const latest = availableLessons.find((lesson) => lesson.id === progress.lastLesson);
 
   return (
-    <div className="home">
-      <div className="folio">
+    <div className="cover-wrap">
+      <div className="cover-register">
         <span>LearnPlainScript</span>
-        <span>Vol. 2.3.1</span>
-        <span>An interactive companion</span>
-        <span>MMXXVI</span>
+        <span>An interactive course</span>
+        <span>PlainScript 2.3.1</span>
+        <span>Issue 01 · MMXXVI</span>
       </div>
 
-      <section className="masthead">
-        <div className="hero-grid">
-          <div className="hero-copy">
-            <h1 className="display">Learn the language that reads like <em>plain writing</em>.</h1>
-            <div className="hero-lede-row">
-              <p className="lede">
-                A practical course through PlainScript 2.3.1 — a statically typed language for the
-                JavaScript platform. Read short, carefully set lessons. Run real programs. Keep a
-                record of what you have understood.
-              </p>
-              <div className="masthead-actions">
-                <button type="button" className="btn-primary" onClick={() => navigate('/learn')}>
-                  Open the curriculum <span aria-hidden="true">→</span>
-                </button>
-                <button type="button" className="btn-ghost" onClick={() => navigate('/playground')}>
-                  Try the compiler
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="hero-art">
-            <Plate plateKey="portrait" fig="01" eager crop="50% 30%" />
-            <div className="hero-art__index">
-              <span>Plate 01 · Riso portrait</span>
-              <span>MMXXVI</span>
-            </div>
+      <section className="cover">
+        <p className="cover-overline">Read · run · keep</p>
+        <h1 className="cover-title">Read it.<br />Run it.<br /><em>Keep it.</em></h1>
+
+        <div className="cover-intro">
+          <p className="cover-standfirst">
+            A course in PlainScript 2.3.1 — the statically typed language that reads like structured
+            English and compiles to ordinary ES modules. Short lessons, real specimens, and the
+            published compiler at the end of every chapter.
+          </p>
+          <div className="cover-actions">
+            <button type="button" className="btn-solid" onClick={() => navigate(`/learn/${nextLesson.id}`)}>
+              {done === 0 ? 'Begin at lesson 01' : 'Continue reading'} <span aria-hidden="true">→</span>
+            </button>
+            <button type="button" className="btn-line" onClick={() => navigate('/learn')}>See the syllabus</button>
           </div>
         </div>
 
-        <dl className="factbar">
-          <div><dt>Version</dt><dd>2.3.1</dd></div>
-          <div><dt>Chapters</dt><dd>Twenty</dd></div>
-          <div><dt>Lessons</dt><dd>{availableLessons.length} supported</dd></div>
-          <div><dt>Compiles to</dt><dd>ES modules</dd></div>
+        <figure className="cover-plate">
+          <img src={PLATES.portrait.src} alt={PLATES.portrait.alt} width="1024" height="1024" fetchPriority="high" />
+          <div className="cover-plate__shade" aria-hidden="true" />
+          <figcaption>
+            <span>Plate I · Second sight</span>
+            <span>Riso / halftone · MMXXVI</span>
+          </figcaption>
+          <button type="button" className="cover-cue" onClick={() => navigate('/playground')}>
+            <span>Open the compiler</span>
+            <i aria-hidden="true">↗</i>
+          </button>
+        </figure>
+
+        <dl className="cover-stats">
+          <div><dt>Chapters</dt><dd>20</dd></div>
+          <div><dt>Lessons</dt><dd>{availableLessons.length}</dd></div>
+          <div><dt>Language</dt><dd>2.3.1</dd></div>
+          <div><dt>Output</dt><dd>ES modules</dd></div>
         </dl>
       </section>
 
       <Reveal>
-        <section className="plate">
-          <div className="plate-copy">
-            <div className="section-mark"><span>The language</span>Readable at the source</div>
-            <h2>Readable at the source. Ordinary at the output.</h2>
-            <p>
-              No new runtime and no virtual machine. PlainScript is a typed surface over the
-              JavaScript platform: the compiler checks your program, then emits modules your existing
-              tools already understand.
-            </p>
-            <ul className="checklist">
-              <li>Statically checked before anything runs.</li>
-              <li>Functions, records, optionals and async without ceremony.</li>
-              <li>Classes, generators and typed errors in 2.3.</li>
-              <li>Native JSX, native regex and cross-language bridges.</li>
-              <li>Value re-exports and declared local runtimes, fixed in 2.3.1.</li>
-            </ul>
+        <section className="opening">
+          <BandLabel index="01">The language</BandLabel>
+          <div className="opening-grid">
+            <h2 className="opening-statement">A typed surface over the platform you already run.</h2>
+            <div className="opening-copy">
+              <p>
+                No new runtime and no virtual machine. PlainScript checks your program, then emits
+                modules your existing tools already understand. This course is a reading of that
+                language, chapter by chapter, with the compiler close at hand.
+              </p>
+              <ol className="claims">
+                <li><span>01</span><b>Checked before it runs.</b> Types, records, optionals and typed failures.</li>
+                <li><span>02</span><b>2.3 at the surface.</b> Classes, generators, native JSX and regex.</li>
+                <li><span>03</span><b>Ordinary at the output.</b> Readable ES modules, no ecosystem to leave.</li>
+              </ol>
+            </div>
           </div>
           <CodeTabs />
         </section>
       </Reveal>
 
-      <Reveal><HomeLab /></Reveal>
-
       <Reveal>
-        <section className="art-break">
-          <div className="art-break__copy">
-            <div className="section-mark"><span>Interlude</span>On reading code</div>
-            <p className="quoteline">
-              “A program is a sentence you will read a hundred times. <b>Write it for the hundredth.</b>”
-            </p>
-            <p className="attrib">PlainScript design note · Decisions</p>
-          </div>
-          <div className="art-break__plate"><Plate plateKey="eye" fig="02" crop="50% 48%" /></div>
-        </section>
-      </Reveal>
-
-      <Reveal>
-        <section className="manual">
-          <div className="section-mark"><span>Contents</span>Everything, in order</div>
-          <ol className="manual-list">
-            {chapters.map((chapter) => {
-              const chapterDone = chapter.lessons.every((lesson) => progress.completedLessons.includes(lesson.id));
-              const first = chapter.lessons[0];
-              return (
-                <li key={chapter.number}>
-                  <button type="button" className={chapterDone ? 'is-done' : ''} onClick={() => navigate(`/learn/${first.id}`)}>
-                    <span className="ix">{chapter.number}</span>
-                    <span className="mt">{chapter.title}</span>
-                    <span className="mg">{chapterDone ? 'read ✓' : `${chapter.lessons.length} lesson${chapter.lessons.length > 1 ? 's' : ''}`}</span>
-                  </button>
-                </li>
-              );
-            })}
-          </ol>
-        </section>
-      </Reveal>
-
-      <Reveal>
-        <section className="place">
-          <div className="place__copy">
-            <div className="section-mark"><span>Your place</span>Kept in this browser</div>
-            <h2>{done === 0 ? 'Begin at the beginning.' : done === availableLessons.length ? 'The course is read.' : 'Continue where you stopped.'}</h2>
+        <section className="workbench">
+          <div className="workbench-head">
+            <BandLabel index="02">The compiler</BandLabel>
+            <h2>Write a sentence. <em>Run it.</em></h2>
             <p>
-              {done === 0
-                ? 'Progress is saved locally, so you can close the book and return to the same paragraph. No account, no email, no dashboard.'
-                : `You have read ${done} of ${availableLessons.length} lessons. ${latest ? `The last page open was “${latest.title}”.` : ''}`}
+              Not a simulation. Every run calls the published PlainScript 2.3.1 compiler in a
+              short-lived process and returns the program’s real output or diagnostics.
             </p>
-            <div className="place__actions">
-              <button type="button" className="btn-primary" onClick={() => navigate(`/learn/${nextLesson.id}`)}>
-                {done === 0 ? 'Start the first lesson' : 'Continue reading'} <span aria-hidden="true">→</span>
-              </button>
-              <button type="button" className="btn-ghost" onClick={() => navigate('/learn')}>See the contents</button>
-            </div>
           </div>
-          <div className="place__meter">
-            <div className="meter-number">{String(percent).padStart(2, '0')}<span>%</span></div>
-            <div className="meter-track"><i style={{ width: `${percent}%` }} /></div>
-            <div className="meter-caption">
-              <span>{done} read</span>
-              <span>{availableLessons.length - done} remaining</span>
-            </div>
-          </div>
+          <HomeLab />
         </section>
       </Reveal>
 
       <Reveal>
-        <section className="art-strip" aria-label="Halftone art plates">
-          <Plate plateKey="figure" fig="03" crop="50% 22%" />
-          <Plate plateKey="chrome" fig="04" />
-          <Plate plateKey="hands" fig="05" crop="50% 55%" />
+        <section className="syllabus">
+          <div className="syllabus-head">
+            <BandLabel index="03">The syllabus</BandLabel>
+            <h2>Twenty chapters,<br />in reading order.</h2>
+            <p>
+              Each entry is one sitting. Read the article, change the specimen, then put it through
+              the compiler at the bottom of the page.
+            </p>
+            <div className="syllabus-count">
+              <b>{String(done).padStart(2, '0')}</b>
+              <span>of {availableLessons.length} lessons read</span>
+            </div>
+          </div>
+          <ChapterLedger progress={progress} navigate={navigate} />
+          <button type="button" className="spread-link" onClick={() => navigate('/learn')}>
+            Open the full contents <span aria-hidden="true">→</span>
+          </button>
         </section>
       </Reveal>
 
       <Reveal>
-        <section className="principles">
-          <div className="section-mark"><span>Position</span>What this is, and is not</div>
-          <div className="principle-grid">
-            <article className="principle">
-              <span className="num">01</span>
-              <h3>Independent by design</h3>
-              <p>PlainScript is a language with its own grammar, checker and compiler, built in the open and published under MIT. This course is an independent reading of it.</p>
-            </article>
-            <article className="principle">
-              <span className="num">02</span>
-              <h3>Practice before polish</h3>
-              <p>Every lesson ends with the compiler, not a quiz score. You are meant to change the program, break it, read the diagnostic and change it again.</p>
-            </article>
-            <article className="principle">
-              <span className="num">03</span>
-              <h3>Ordinary at the output</h3>
-              <p>Nothing here invents a runtime. The examples compile to readable ES modules, and the course says so plainly when a topic needs a real project boundary.</p>
-            </article>
+        <section className="interlude">
+          <img src={PLATES.sheet.src} alt={PLATES.sheet.alt} loading="lazy" decoding="async" width="1024" height="1024" />
+          <div className="interlude__shade" aria-hidden="true" />
+          <blockquote>
+            <p>“A program is a sentence you will read a hundred times. <b>Write it for the hundredth.</b>”</p>
+            <cite>PlainScript design note · Decisions</cite>
+          </blockquote>
+          <span className="interlude__tag">Plate IV · The sheet · screenprint / halftone</span>
+        </section>
+      </Reveal>
+
+      <Reveal>
+        <section className="contact-sheet" aria-label="Halftone plates">
+          <figure className="sheet-a">
+            <img src={PLATES.voice.src} alt={PLATES.voice.alt} loading="lazy" decoding="async" width="1024" height="1024" />
+            <figcaption>Plate VI · Speaking plainly</figcaption>
+          </figure>
+          <figure className="sheet-b">
+            <img src={PLATES.type.src} alt={PLATES.type.alt} loading="lazy" decoding="async" width="1024" height="1024" />
+            <figcaption>Plate VIII · Sort P</figcaption>
+          </figure>
+          <figure className="sheet-c">
+            <img src={PLATES.hands.src} alt={PLATES.hands.alt} loading="lazy" decoding="async" width="1024" height="1024" />
+            <figcaption>Plate V · Hand to hand</figcaption>
+          </figure>
+        </section>
+      </Reveal>
+
+      <Reveal>
+        <Bookmark progress={progress} navigate={navigate} />
+      </Reveal>
+
+      <Reveal>
+        <section className="position">
+          <BandLabel index="04">Position</BandLabel>
+          <div className="position-grid">
+            <p className="position-line">
+              Not a documentation mirror. <em>A course with a compiler attached.</em>
+            </p>
+            <ol className="position-list">
+              <li>
+                <span>01</span>
+                <div><b>Independent by design</b><p>Its own grammar, checker and compiler — built in the open under MIT. This is an independent reading of it.</p></div>
+              </li>
+              <li>
+                <span>02</span>
+                <div><b>Practice before polish</b><p>Every lesson ends at the bench, not a score. Change the program, break it, read the diagnostic, change it again.</p></div>
+              </li>
+              <li>
+                <span>03</span>
+                <div><b>Ordinary at the output</b><p>Nothing here invents a runtime. When a topic needs a real project boundary, the course says so plainly.</p></div>
+              </li>
+            </ol>
           </div>
-          <p className="closing-line"><button type="button" className="btn-ghost" onClick={() => navigate('/learn')}>Read the whole curriculum →</button></p>
         </section>
       </Reveal>
     </div>
   );
 }
 
-/* ---------- curriculum ---------- */
+function HomeLab() {
+  const [code, setCode] = useState(homepageSpecimen);
+  const { result, run } = useRunner();
+  return (
+    <div
+      className="home-lab"
+      onKeyDown={(event) => {
+        if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') { event.preventDefault(); run(code); }
+      }}
+    >
+      <div className="home-lab__note">
+        <p className="hl-label">try-it.pln</p>
+        <p>Edit the greeting, then run it. Break the string and read the compiler’s answer.</p>
+        <span className="hl-hint">⌘/Ctrl + Enter</span>
+      </div>
+      <div className="home-lab__editor">
+        <Editor code={code} onChange={setCode} label="try-it.pln" minHeight="250px" />
+        <div className="home-lab__actions">
+          <button type="button" className="btn-solid" onClick={() => run(code)} disabled={result.status === 'running'}>
+            <Play size={13} strokeWidth={2.2} aria-hidden="true" /> {result.status === 'running' ? 'Running…' : 'Run program'}
+          </button>
+          <button type="button" className="btn-line" onClick={() => { setCode(homepageSpecimen); }}>Reset</button>
+        </div>
+      </div>
+      <div className="home-lab__output">
+        <Output result={result} compact />
+      </div>
+    </div>
+  );
+}
 
-function ProgressBand({ progress, navigate, resetProgress }) {
+function Bookmark({ progress, navigate }) {
   const done = progress.completedLessons.length;
   const percent = Math.round((done / availableLessons.length) * 100);
   const next = availableLessons.find((lesson) => !progress.completedLessons.includes(lesson.id)) || availableLessons[0];
+  const index = availableLessons.findIndex((lesson) => lesson.id === next.id) + 1;
   return (
-    <section className="progress-band" aria-label="Course progress">
-      <div className="progress-band__meter">
-        <span className="pb-percent">{String(percent).padStart(2, '0')}%</span>
-        <div className="pb-track"><i style={{ width: `${percent}%` }} /></div>
+    <section className="bookmark">
+      <div className="bookmark__tab">
+        <span>Your bookmark</span>
+        <b>{String(percent).padStart(2, '0')}%</b>
       </div>
-      <p>{done} of {availableLessons.length} lessons read. {done === 0 ? 'The first page is waiting.' : 'Progress is kept in this browser.'}</p>
-      <div className="progress-band__actions">
-        <button type="button" className="btn-primary small" onClick={() => navigate(`/learn/${next.id}`)}>
-          {done === 0 ? 'Open lesson 01' : 'Continue'} <span aria-hidden="true">→</span>
-        </button>
-        {done > 0 && <button type="button" className="link-quiet" onClick={resetProgress}>Reset progress</button>}
+      <div className="bookmark__body">
+        <p className="bookmark__label">Kept in this browser</p>
+        <h3>{done === 0 ? 'Nothing read yet. The first page is waiting.' : done === availableLessons.length ? 'Every page is read.' : `Continue at lesson ${String(index).padStart(2, '0')}.`}</h3>
+        <p>{next.title} · {next.chapter}</p>
+        <div className="bookmark__track"><i style={{ width: `${percent}%` }} /></div>
       </div>
+      <button type="button" className="btn-solid" onClick={() => navigate(`/learn/${next.id}`)}>
+        {done === 0 ? 'Open the first lesson' : 'Return to the bookmark'} <span aria-hidden="true">→</span>
+      </button>
     </section>
   );
 }
 
-function Curriculum({ navigate, progress, resetProgress }) {
-  return (
-    <div className="curriculum">
-      <div className="page-kicker">
-        <span className="kicker-no">01</span>
-        <span className="kicker-section">Contents</span>
-        <span className="kicker-meta">PlainScript 2.3.1 · {availableLessons.length} lessons</span>
-      </div>
+/* ---------- curriculum ledger ---------- */
 
-      <div className="index-head">
-        <h1 className="display">The course,<br /><em>in order.</em></h1>
-        <p className="lede">
-          Twenty chapters, read as a sequence. Each one is a short article with a specimen, a
-          compiler-backed practice, and a question that asks you to use the language rather than
-          recognise it.
+function ChapterLedger({ progress, navigate, withLessons = false }) {
+  return (
+    <div className={`ledger${withLessons ? ' ledger-full' : ''}`}>
+      {chapters.map((chapter) => {
+        const lessonsDone = chapter.lessons.filter((lesson) => progress.completedLessons.includes(lesson.id)).length;
+        const allDone = lessonsDone === chapter.lessons.length;
+        const first = chapter.lessons[0];
+        return (
+          <article className="ledger-row" key={chapter.number}>
+            <div className="ledger-no">{chapter.number}</div>
+            <div className="ledger-main">
+              {withLessons ? (
+                <>
+                  <div className="ledger-title">
+                    <h3>{chapter.title}</h3>
+                    <span className={allDone ? 'is-read' : ''}>{allDone ? 'read' : `${lessonsDone}/${chapter.lessons.length}`}</span>
+                  </div>
+                  <p className="ledger-summary">{chapter.summary}</p>
+                  <div className="ledger-lessons">
+                    {chapter.lessons.map((lesson) => {
+                      const isDone = progress.completedLessons.includes(lesson.id);
+                      return (
+                        <button key={lesson.id} type="button" className={isDone ? 'is-read' : ''} onClick={() => navigate(`/learn/${lesson.id}`)}>
+                          <span className="ll-mark">{isDone ? <Check size={11} strokeWidth={2.6} aria-hidden="true" /> : '§'}</span>
+                          <span className="ll-title">{lesson.title}</span>
+                          <span className="ll-meta">{lesson.duration}{progress.quizScores[lesson.id] === 1 ? ' · check passed' : ''}</span>
+                          <span className="ll-arrow" aria-hidden="true">→</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              ) : (
+                <button type="button" className="ledger-link" onClick={() => navigate(`/learn/${first.id}`)}>
+                  <span className="ledger-title"><h3>{chapter.title}</h3><span className={allDone ? 'is-read' : ''}>{allDone ? 'read' : 'unread'}</span></span>
+                  <span className="ledger-summary">{chapter.summary}</span>
+                </button>
+              )}
+            </div>
+            <div className="ledger-side">
+              <span className="ls-count">{chapter.lessons.length}</span>
+              <span className="ls-label">{chapter.lessons.length === 1 ? 'lesson' : 'lessons'}</span>
+              <button type="button" className="ledger-go" onClick={() => navigate(`/learn/${first.id}`)} aria-label={`Open ${chapter.title}`}>
+                →
+              </button>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  );
+}
+
+function Curriculum({ navigate, progress, resetProgress }) {
+  const done = progress.completedLessons.length;
+  const next = availableLessons.find((lesson) => !progress.completedLessons.includes(lesson.id)) || availableLessons[0];
+  return (
+    <div className="contents">
+      <RunningHead index="01" section="Contents" meta={`${availableLessons.length} lessons · PlainScript 2.3.1`} />
+
+      <div className="contents-head">
+        <h1 className="page-title">Contents<span className="title-dot">.</span></h1>
+        <p>
+          Twenty chapters read as a sequence. Each is a short article with a specimen, a bench and
+          one question. Begin anywhere; the browser remembers where you stopped.
         </p>
       </div>
 
-      <ProgressBand progress={progress} navigate={navigate} resetProgress={resetProgress} />
+      <div className="contents-bar">
+        <div><b>{String(done).padStart(2, '0')}</b><span>read</span></div>
+        <div><b>{String(availableLessons.length - done).padStart(2, '0')}</b><span>remaining</span></div>
+        <div className="cb-next"><span>Next</span><b>{next.title}</b></div>
+        <button type="button" className="btn-solid" onClick={() => navigate(`/learn/${next.id}`)}>
+          {done === 0 ? 'Open lesson 01' : 'Continue'} <span aria-hidden="true">→</span>
+        </button>
+        {done > 0 && <button type="button" className="link-quiet" onClick={resetProgress}>Reset progress</button>}
+      </div>
 
-      <section className="chapter-index" aria-label="Curriculum">
-        {chapters.map((chapter) => {
-          const chapterDone = chapter.lessons.filter((lesson) => progress.completedLessons.includes(lesson.id)).length;
-          return (
-            <article className="chapter-row" key={chapter.number}>
-              <div className="chapter-row__no">{chapter.number}</div>
-              <div className="chapter-row__body">
-                <div className="chapter-row__head">
-                  <h2>{chapter.title}</h2>
-                  <span>{chapterDone}/{chapter.lessons.length} read</span>
-                </div>
-                <p>{chapter.summary}</p>
-                <div className="chapter-lessons">
-                  {chapter.lessons.map((lesson) => {
-                    const isDone = progress.completedLessons.includes(lesson.id);
-                    const quiz = progress.quizScores[lesson.id];
-                    return (
-                      <button key={lesson.id} type="button" className={`lesson-row${isDone ? ' is-done' : ''}`} onClick={() => navigate(`/learn/${lesson.id}`)}>
-                        <span className="lesson-row__mark">{isDone ? <Check size={12} strokeWidth={2.4} aria-hidden="true" /> : '§'}</span>
-                        <span className="lesson-row__title">{lesson.title}</span>
-                        <span className="lesson-row__meta">{lesson.duration}{quiz === 1 ? ' · check passed' : ''}</span>
-                        <ArrowRight size={15} strokeWidth={1.7} aria-hidden="true" className="lesson-row__arrow" />
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </article>
-          );
-        })}
-      </section>
+      <ChapterLedger progress={progress} navigate={navigate} withLessons />
 
-      <p className="index-note">
-        Lessons are checked against the published <code>plainscript-lang@2.3.1</code> compiler.
-        Platform topics — files, databases, HTTP — are described as runtime boundaries rather than
-        invented as portable syntax.
+      <p className="contents-note">
+        Lessons are checked against <code>plainscript-lang@2.3.1</code>. Platform topics — files,
+        databases, HTTP — are described as runtime boundaries rather than invented as portable syntax.
       </p>
     </div>
   );
@@ -824,14 +837,17 @@ function LessonPractice({ lesson, progress, completeChallenge }) {
   };
 
   return (
-    <section className="margin-block practice">
-      <div className="margin-label"><span>Specimen</span>Practice</div>
-      <h3>{done ? 'The compiler agrees.' : 'Change the code.'}</h3>
-      <p className="margin-prompt"><Inline text={challenge?.prompt || ''} /></p>
+    <section className="bench-panel practice">
+      <div className="panel-label"><span>01</span>Practice</div>
+      <div className="panel-head">
+        <h3>{done ? 'The compiler agrees.' : 'Change the specimen.'}</h3>
+        <span className="panel-chip">2.3.1</span>
+      </div>
+      <p className="panel-prompt"><Inline text={challenge?.prompt || ''} /></p>
 
       <Editor code={code} onChange={setCode} label={`${lesson.id}.pln`} />
       <div className="practice-controls">
-        <button type="button" className="btn-primary small" onClick={execute} disabled={!runnable || result.status === 'running'}>
+        <button type="button" className="btn-solid small" onClick={execute} disabled={!runnable || result.status === 'running'}>
           <Play size={12} strokeWidth={2.2} aria-hidden="true" /> {result.status === 'running' ? 'Running…' : 'Run'}
         </button>
         <button type="button" className="icon-btn" onClick={() => { setCode(challenge?.starter || lesson.example); reset(); }} aria-label="Reset the specimen">
@@ -864,9 +880,11 @@ function LessonQuiz({ lesson, savedScore, saveQuiz }) {
   };
 
   return (
-    <section className="margin-block check">
-      <div className="margin-label"><span>Check</span>One question</div>
-      <h3>{quiz.question}</h3>
+    <section className="bench-panel check">
+      <div className="panel-label"><span>02</span>Check</div>
+      <div className="panel-head">
+        <h3>{quiz.question}</h3>
+      </div>
       <div className="quiz-options" role="group" aria-label="Answer options">
         {quiz.options.map((option, index) => {
           const state = !answered ? '' : index === quiz.answer ? 'correct' : index === selected ? 'incorrect' : 'muted';
@@ -897,120 +915,131 @@ function LessonPage({ lesson, navigate, progress, completeLesson, completeChalle
   const isComplete = progress.completedLessons.includes(lesson.id);
   const plateKey = plateForChapter(lesson.chapterNumber);
   const crop = CROPS[index % CROPS.length];
+  const roman = ROMAN[(Number(lesson.chapterNumber) - 1) % ROMAN.length];
 
   useEffect(() => { window.scrollTo(0, 0); }, [lesson.id]);
 
   return (
     <article className="lesson">
-      <figure className="chapter-band">
-        <img src={PLATES[plateKey].src} alt={PLATES[plateKey].alt} style={{ objectPosition: crop }} width="1024" height="1024" />
-        <span className="chapter-band__stamp"><b>Chapter {lesson.chapterNumber}</b> · {lesson.chapter}</span>
-        <span className="chapter-band__num" aria-hidden="true">{lesson.chapterNumber}</span>
-      </figure>
+      <RunningHead
+        index={lesson.chapterNumber}
+        section={lesson.chapter}
+        meta={`Lesson ${String(index + 1).padStart(2, '0')} / ${String(availableLessons.length).padStart(2, '0')} · ${lesson.duration}`}
+      />
 
-      <div className="page-kicker lesson-kicker">
-        <span className="kicker-no">{lesson.chapterNumber}</span>
-        <span className="kicker-section">{lesson.chapter}</span>
-        <span className="kicker-meta">Lesson {String(index + 1).padStart(2, '0')} / {String(availableLessons.length).padStart(2, '0')} · {lesson.duration}</span>
-      </div>
-
-      <h1 className="prose-h1">{lesson.title}</h1>
-      <p className="prose-lede"><Inline text={lesson.intro} /></p>
-
-      <div className="article-grid">
-        <div className="prose">
-          <section className="lesson-sec">
-            <h2>What you will learn</h2>
-            <ul className="objectives">
-              {lesson.objectives.map((objective) => <li key={objective}>{objective}</li>)}
-            </ul>
-          </section>
-
-          <section className="lesson-sec">
-            <h2>The idea</h2>
-            <p><Inline text={lesson.explanation} /></p>
-          </section>
-
-          <section className="lesson-sec">
-            <h2>Syntax, close up</h2>
-            <div className="syntax-table">
-              {lesson.syntax.map(([term, description]) => (
-                <div className="syntax-row" key={term}>
-                  <code className="syntax-term"><Tokens code={term.replace(/`/g, '')} /></code>
-                  <span><Inline text={description} /></span>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="lesson-sec">
-            <h2>The specimen</h2>
-            <p>Read it once for the shape, then read it again for the names.</p>
-            <CodeSpecimen code={lesson.example} file={`${lesson.id}.pln`} />
-            {lesson.expectedOutput && (
-              <div className="expected">
-                <span className="expected-label">Expected output</span>
-                <pre>{lesson.expectedOutput}</pre>
-              </div>
-            )}
-          </section>
-
-          <section className="lesson-sec">
-            <div className="exercise">
-              <span className="exercise-label">Exercise</span>
-              <p><Inline text={lesson.exercise} /></p>
-            </div>
-          </section>
-
-          <section className="lesson-sec">
-            <h2>Common mistakes</h2>
-            <ul className="mistakes">
-              {lesson.commonMistakes.map((mistake) => <li key={mistake}><Inline text={mistake} /></li>)}
-            </ul>
-          </section>
-
-          <blockquote className="lesson-quote">
-            The compiler checks the source before it runs. When a line feels unclear, give it a name
-            or a type instead of hiding the decision.
-            <cite>Margin note · PlainScript 2.3.1</cite>
-          </blockquote>
-        </div>
-
-        <aside className="lesson-margin" aria-label="Practice and check">
-          <LessonPractice lesson={lesson} progress={progress} completeChallenge={completeChallenge} />
-          <LessonQuiz lesson={lesson} savedScore={progress.quizScores[lesson.id]} saveQuiz={saveQuiz} />
-        </aside>
-      </div>
-
-      <div className={`lesson-complete${isComplete ? ' is-done' : ''}`}>
-        <div className="completion">
-          <span className="completion-mark">{isComplete ? <Check size={15} strokeWidth={2.6} aria-hidden="true" /> : '○'}</span>
-          <div>
-            <b>{isComplete ? 'Lesson read' : 'Finished reading?'}</b>
-            <small>{isComplete ? 'Recorded in this browser.' : 'Mark the lesson when the idea feels clear. It is reversible.'}</small>
+      <header className="lesson-head">
+        <div className="lesson-head__type">
+          <span className="lesson-tag">Chapter {lesson.chapterNumber} · Plate {roman}</span>
+          <h1>{lesson.title}</h1>
+          <p className="lesson-standfirst"><Inline text={lesson.intro} /></p>
+          <div className="lesson-meta">
+            <span>{lesson.duration}</span>
+            <span>PlainScript 2.3.1</span>
+            <span className={isComplete ? 'is-read' : ''}>{isComplete ? 'read' : 'unread'}</span>
           </div>
         </div>
-        {!isComplete
-          ? <button type="button" className="btn-primary small" onClick={() => completeLesson(lesson.id)}>Mark as read</button>
-          : <button type="button" className="link-quiet" onClick={() => navigate(`/learn/${next ? next.id : availableLessons[0].id}`)}>Keep going →</button>}
+        <figure className="lesson-plate">
+          <img src={PLATES[plateKey].src} alt={PLATES[plateKey].alt} style={{ objectPosition: crop }} width="1024" height="1024" />
+          <span className="lesson-plate__num" aria-hidden="true">{lesson.chapterNumber}</span>
+          <figcaption><span>Plate {roman}</span><span>{PLATES[plateKey].title}</span></figcaption>
+        </figure>
+      </header>
+
+      <div className="lesson-body prose">
+        <section className="lesson-sec">
+          <h2>What you will learn</h2>
+          <ul className="objectives">
+            {lesson.objectives.map((objective) => <li key={objective}>{objective}</li>)}
+          </ul>
+        </section>
+
+        <section className="lesson-sec">
+          <h2>The idea</h2>
+          <p><Inline text={lesson.explanation} /></p>
+        </section>
+
+        <section className="lesson-sec">
+          <h2>Syntax, close up</h2>
+          <div className="syntax-table">
+            {lesson.syntax.map(([term, description]) => (
+              <div className="syntax-row" key={term}>
+                <code className="syntax-term"><Tokens code={term.replace(/`/g, '')} /></code>
+                <span><Inline text={description} /></span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="lesson-sec">
+          <h2>The specimen</h2>
+          <p>Read it once for the shape, then again for the names.</p>
+          <CodeSpecimen code={lesson.example} file={`${lesson.id}.pln`} />
+          {lesson.expectedOutput && (
+            <div className="expected">
+              <span className="expected-label">Expected output</span>
+              <pre>{lesson.expectedOutput}</pre>
+            </div>
+          )}
+        </section>
+
+        <section className="lesson-sec lesson-sec--tight">
+          <div className="exercise">
+            <span className="exercise-label">Exercise</span>
+            <p><Inline text={lesson.exercise} /></p>
+          </div>
+        </section>
+
+        <section className="lesson-sec">
+          <h2>Common mistakes</h2>
+          <ul className="mistakes">
+            {lesson.commonMistakes.map((mistake) => <li key={mistake}><Inline text={mistake} /></li>)}
+          </ul>
+        </section>
+
+        <blockquote className="lesson-quote">
+          The compiler checks the source before it runs. When a line feels unclear, give it a name
+          or a type instead of hiding the decision.
+          <cite>Margin note · PlainScript 2.3.1</cite>
+        </blockquote>
       </div>
 
-      <nav className="page-nav" aria-label="Lesson navigation">
-        {previous
-          ? <button type="button" className="pn pn-prev" onClick={() => navigate(`/learn/${previous.id}`)}>
-              <span className="pn-label">← Previous</span>
-              <span className="pn-title">{previous.title}</span>
-            </button>
-          : <span className="pn pn-empty" aria-hidden="true" />}
-        {next
-          ? <button type="button" className="pn pn-next" onClick={() => navigate(`/learn/${next.id}`)}>
-              <span className="pn-label">Next →</span>
-              <span className="pn-title">{next.title}</span>
-            </button>
-          : <button type="button" className="pn pn-next" onClick={() => navigate('/learn')}>
-              <span className="pn-label">End of the course</span>
-              <span className="pn-title">Back to the contents</span>
-            </button>}
+      <section className="bench">
+        <div className="bench-head">
+          <BandLabel index="LAB">The bench</BandLabel>
+          <div className="bench-head__copy">
+            <h2>Put the lesson under the compiler.</h2>
+            <p>A specimen to change and one question to answer. Your work stays in this browser.</p>
+          </div>
+        </div>
+        <div className="bench-grid">
+          <LessonPractice lesson={lesson} progress={progress} completeChallenge={completeChallenge} />
+          <LessonQuiz lesson={lesson} savedScore={progress.quizScores[lesson.id]} saveQuiz={saveQuiz} />
+        </div>
+      </section>
+
+      <div className={`signoff${isComplete ? ' is-read' : ''}`}>
+        <span className="signoff-mark">{isComplete ? <Check size={16} strokeWidth={2.6} aria-hidden="true" /> : '○'}</span>
+        <div className="signoff-copy">
+          <b>{isComplete ? 'Lesson read' : 'Finished reading?'}</b>
+          <small>{isComplete ? 'Recorded in this browser.' : 'Mark the lesson when the idea feels clear. It is reversible.'}</small>
+        </div>
+        {!isComplete
+          ? <button type="button" className="btn-solid small" onClick={() => completeLesson(lesson.id)}>Mark as read</button>
+          : <span className="signoff-note">p. {String(index + 1).padStart(2, '0')} / {String(availableLessons.length).padStart(2, '0')}</span>}
+      </div>
+
+      <nav className="turn" aria-label="Lesson navigation">
+        {previous ? (
+          <button type="button" className="turn-prev" onClick={() => navigate(`/learn/${previous.id}`)}>
+            <span>← Previous</span>
+            <b>{previous.title}</b>
+          </button>
+        ) : <span className="turn-prev turn-empty" aria-hidden="true" />}
+        <button type="button" className="turn-next" onClick={() => navigate(next ? `/learn/${next.id}` : '/learn')}>
+          <span>{next ? 'Turn to' : 'End of the book'}</span>
+          <b>{next ? next.title : 'Back to the contents'}</b>
+          <i aria-hidden="true">→</i>
+        </button>
       </nav>
     </article>
   );
@@ -1031,75 +1060,75 @@ function Playground({ navigate }) {
   };
 
   return (
-    <div className="playground">
-      <div className="page-kicker">
-        <span className="kicker-no">LAB</span>
-        <span className="kicker-section">Playground</span>
-        <span className="kicker-meta">plainscript-lang 2.3.1 · bounded process</span>
-      </div>
+    <div className="lab">
+      <RunningHead index="LAB" section="The bench" meta={`plainscript-lang 2.3.1 · ${playgroundExamples.length} specimens`} />
 
-      <div className="lab-head">
-        <h1 className="display">The compiler,<br /><em>at the desk.</em></h1>
-        <p className="lede">
+      <div className="lab-intro">
+        <h1 className="page-title">The compiler,<br /><em>at the desk.</em></h1>
+        <p>
           A full editor for the language. Nine specimens cover the 2.1 dialect and the 2.3 object
-          model; every one is checked against the published compiler before it ships.
+          model; every one is executed against the published compiler before it ships.
         </p>
       </div>
 
-      <div className="example-strip" role="tablist" aria-label="Example programs">
-        {playgroundExamples.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            role="tab"
-            aria-selected={exampleId === item.id}
-            className={exampleId === item.id ? 'on' : ''}
-            onClick={() => choose(item)}
-          >
-            <span className="ex-no">{String(playgroundExamples.indexOf(item) + 1).padStart(2, '0')}</span>
-            {item.label}
-          </button>
-        ))}
-      </div>
-
-      <p className="example-note">{example.note}</p>
-
-      <div className="lab-grid">
-        <section className="lab-pane" aria-label="Editor">
-          <div className="lab-pane__head">
-            <span>Editor / {example.id}.pln</span>
-            <span className="lab-pane__hint">Tab inserts four spaces</span>
-          </div>
-          <Editor code={code} onChange={setCode} label={`${example.id}.pln`} minHeight="440px" />
-          <div className="lab-controls">
-            <button type="button" className="btn-primary" onClick={() => run(code)} disabled={result.status === 'running'}>
-              <Play size={14} strokeWidth={2.2} aria-hidden="true" /> {result.status === 'running' ? 'Running…' : 'Run program'}
+      <div className="lab-layout">
+        <aside className="specimen-index" aria-label="Specimens">
+          <span className="si-label">Specimens</span>
+          {playgroundExamples.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              aria-pressed={exampleId === item.id}
+              className={exampleId === item.id ? 'on' : ''}
+              onClick={() => choose(item)}
+            >
+              <span>{String(playgroundExamples.indexOf(item) + 1).padStart(2, '0')}</span>
+              {item.label}
             </button>
-            <button type="button" className="icon-btn" onClick={() => { setCode(example.code); reset(); }} aria-label="Reset to the example">
-              <RotateCcw size={15} strokeWidth={1.8} aria-hidden="true" />
-            </button>
-            <span className="lab-shortcut">⌘/Ctrl + Enter</span>
-          </div>
-        </section>
+          ))}
+          <p className="si-note">Every specimen is checked at build time.</p>
+        </aside>
 
-        <section className="lab-pane lab-output" aria-label="Output" onKeyDown={(event) => { if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') { event.preventDefault(); run(code); } }}>
-          <div className="lab-pane__head">
-            <span>Console</span>
-            <span className={`run-state is-${result.status}`}>{result.status === 'idle' ? 'ready' : result.status}</span>
+        <div className="lab-main">
+          <div className="lab-toolbar">
+            <span className="lab-toolbar__title">{String(playgroundExamples.indexOf(example) + 1).padStart(2, '0')} / {example.label}</span>
+            <span className="lab-toolbar__note">{example.note}</span>
           </div>
-          <Output result={result} />
-          <div className="lab-notes">
-            <p>File, network, process and dynamic-import access are removed before execution.</p>
-            <p>Programs time out after 3.5 seconds. Output is capped at 64 KB.</p>
+
+          <div className="lab-editor-row">
+            <div className="lab-editor-col">
+              <Editor code={code} onChange={setCode} label={`${example.id}.pln`} minHeight="420px" />
+              <div className="lab-controls">
+                <button type="button" className="btn-solid" onClick={() => run(code)} disabled={result.status === 'running'}>
+                  <Play size={14} strokeWidth={2.2} aria-hidden="true" /> {result.status === 'running' ? 'Running…' : 'Run program'}
+                </button>
+                <button type="button" className="icon-btn" onClick={() => { setCode(example.code); reset(); }} aria-label="Reset to the example">
+                  <RotateCcw size={15} strokeWidth={1.8} aria-hidden="true" />
+                </button>
+                <span className="lab-shortcut">⌘/Ctrl + Enter</span>
+              </div>
+            </div>
+
+            <div className="lab-console-col" onKeyDown={(event) => { if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') { event.preventDefault(); run(code); } }}>
+              <div className="console-head">
+                <span>Console</span>
+                <span className={`run-state is-${result.status}`}>{result.status === 'idle' ? 'ready' : result.status}</span>
+              </div>
+              <Output result={result} />
+              <div className="lab-notes">
+                <p>File, network, process and dynamic-import access are removed before execution.</p>
+                <p>Programs time out after 3.5 seconds. Output is capped at 64 KB.</p>
+              </div>
+            </div>
           </div>
-        </section>
+        </div>
       </div>
 
       <div className="lab-footnote">
         <p>
-          Need context for a specimen? The <button type="button" className="link-quiet" onClick={() => navigate('/learn')}>curriculum</button> explains
-          each idea with a lesson, and the <button type="button" className="link-quiet" onClick={() => navigate('/quiz')}>examination</button> checks
-          the language across the whole course.
+          Need context for a specimen? The <button type="button" className="link-quiet" onClick={() => navigate('/learn')}>contents</button> explains
+          each idea, and the <button type="button" className="link-quiet" onClick={() => navigate('/quiz')}>examination</button> checks
+          the language across the course.
         </p>
       </div>
     </div>
@@ -1144,22 +1173,18 @@ function Examination({ progress, recordExam, navigate }) {
   if (finished) {
     const total = questions.length;
     return (
-      <div className="examination exam-result">
-        <div className="page-kicker">
-          <span className="kicker-no">02</span>
-          <span className="kicker-section">Examination</span>
-          <span className="kicker-meta">Result</span>
-        </div>
-        <h1 className="display">You scored<br /><em>{score} of {total}</em>.</h1>
-        <p className="lede">
+      <div className="examination result">
+        <RunningHead index="02" section="Examination" meta="Result" />
+        <h1 className="page-title">You scored<br /><em>{score} of {total}</em>.</h1>
+        <p className="exam-lede">
           {score === total
-            ? 'Every question answered correctly. The language is in your hands now — the playground is the better examination.'
+            ? 'Every question answered correctly. The language is in your hands now — the bench is the better examination.'
             : 'A score is a map, not a verdict. The lessons behind the questions you missed are still open, and the compiler is patient.'}
         </p>
         <div className="result-meter"><i style={{ width: `${Math.round((score / total) * 100)}%` }} /></div>
         <div className="result-actions">
-          <button type="button" className="btn-primary" onClick={restart}>Sit it again</button>
-          <button type="button" className="btn-ghost" onClick={() => navigate('/learn')}>Return to the contents</button>
+          <button type="button" className="btn-solid" onClick={restart}>Sit it again</button>
+          <button type="button" className="btn-line" onClick={() => navigate('/learn')}>Return to the contents</button>
         </div>
         <div className="result-list">
           {questions.map(({ lesson }) => {
@@ -1179,22 +1204,18 @@ function Examination({ progress, recordExam, navigate }) {
 
   return (
     <div className="examination">
-      <div className="page-kicker">
-        <span className="kicker-no">02</span>
-        <span className="kicker-section">Examination</span>
-        <span className="kicker-meta">{questions.length} questions · no timer</span>
-      </div>
+      <RunningHead index="02" section="Examination" meta={`${questions.length} questions · no timer`} />
 
       <div className="exam-head">
-        <h1 className="display">The course,<br /><em>in questions.</em></h1>
-        <p className="lede">
+        <h1 className="page-title">The course,<br /><em>in questions.</em></h1>
+        <p className="exam-lede">
           One question from each lesson. Nothing is scored until you answer, and every answer
           explains itself. The examination can be retaken as often as you like.
         </p>
       </div>
 
-      <div className="exam-progress">
-        <div className="exam-progress__track"><i style={{ width: `${percent}%` }} /></div>
+      <div className="exam-bar">
+        <div className="exam-bar__track"><i style={{ width: `${percent}%` }} /></div>
         <span>Question {String(index + 1).padStart(2, '0')} / {String(questions.length).padStart(2, '0')}</span>
         <span>{score} correct</span>
       </div>
@@ -1221,7 +1242,7 @@ function Examination({ progress, recordExam, navigate }) {
           <div className={`quiz-feedback ${selected === current.quiz.answer ? 'correct' : 'incorrect'}`}>
             <b>{selected === current.quiz.answer ? 'Correct.' : `The answer is ${String.fromCharCode(65 + current.quiz.answer)}.`}</b>
             <p><Inline text={current.quiz.explanation} /></p>
-            <button type="button" className="btn-primary small" onClick={advance}>
+            <button type="button" className="btn-solid small" onClick={advance}>
               {index + 1 >= questions.length ? 'See the result' : 'Next question'} <span aria-hidden="true">→</span>
             </button>
           </div>
@@ -1256,15 +1277,11 @@ function Flashcards({ progress, markReviewed, setCardIndex, navigate }) {
 
   return (
     <div className="flashcards">
-      <div className="page-kicker">
-        <span className="kicker-no">03</span>
-        <span className="kicker-section">Revision cards</span>
-        <span className="kicker-meta">{reviewed} of {flashcards.length} revealed</span>
-      </div>
+      <RunningHead index="03" section="Revision deck" meta={`${reviewed} of ${flashcards.length} revealed`} />
 
-      <div className="lab-head">
-        <h1 className="display">Keep the syntax<br /><em>close at hand.</em></h1>
-        <p className="lede">
+      <div className="split-head">
+        <h1 className="page-title">Keep the syntax<br /><em>close at hand.</em></h1>
+        <p>
           Seven cards for the words that shape the language. Read the question, say the answer,
           then turn the card over.
         </p>
@@ -1277,7 +1294,7 @@ function Flashcards({ progress, markReviewed, setCardIndex, navigate }) {
             <span>{revealed ? 'answer' : 'question'}</span>
           </div>
           <div className="flashcard-body">
-            <span className="eyebrow">PlainScript 2.3.1</span>
+            <span className="flashcard-eyebrow">PlainScript 2.3.1</span>
             <h2>{revealed ? card.answer : card.question}</h2>
             <span className="flip-label">{revealed ? 'Click to hide' : 'Click to reveal'}</span>
           </div>
@@ -1292,15 +1309,15 @@ function Flashcards({ progress, markReviewed, setCardIndex, navigate }) {
         </button>
 
         <aside className="flashcard-side">
-          <div className="section-mark"><span>Deck</span>A small glossary</div>
+          <BandLabel index="03">The deck</BandLabel>
           <h3>Seven words that carry the language.</h3>
           <p>
             These cards are revision, not the lesson. If an answer is unfamiliar, the curriculum has
             a specimen and an explanation waiting for it.
           </p>
           <div className="flashcard-controls">
-            <button type="button" className="btn-ghost" onClick={() => move(-1)}>← Previous</button>
-            <button type="button" className="btn-primary small" onClick={() => move(1)}>Next card →</button>
+            <button type="button" className="btn-line" onClick={() => move(-1)}>← Previous</button>
+            <button type="button" className="btn-solid small" onClick={() => move(1)}>Next card →</button>
           </div>
           <ul className="deck-list">
             {flashcards.map((item, index) => (
@@ -1319,18 +1336,14 @@ function Flashcards({ progress, markReviewed, setCardIndex, navigate }) {
 
 /* ---------- projects ---------- */
 
-function Projects({ progress, navigate }) {
+function Projects({ navigate }) {
   return (
     <div className="projects">
-      <div className="page-kicker">
-        <span className="kicker-no">04</span>
-        <span className="kicker-section">Commissions</span>
-        <span className="kicker-meta">Three briefs · open ended</span>
-      </div>
+      <RunningHead index="04" section="Commissions" meta={`${projects.length} briefs · open ended`} />
 
-      <div className="lab-head">
-        <h1 className="display">Three briefs<br /><em>for the desk.</em></h1>
-        <p className="lede">
+      <div className="split-head">
+        <h1 className="page-title">Three briefs<br /><em>for the desk.</em></h1>
+        <p>
           Lessons teach a word at a time. A commission asks you to make something with several of
           them. None of these have a single correct answer; each has a clear criterion.
         </p>
@@ -1361,7 +1374,7 @@ function Projects({ progress, navigate }) {
                 </div>
               </div>
               <div className="project-actions">
-                <button type="button" className="link-quiet" onClick={() => navigate('/playground')}>Open the playground →</button>
+                <button type="button" className="link-quiet" onClick={() => navigate('/playground')}>Open the bench →</button>
                 <button type="button" className="link-quiet" onClick={() => navigate('/learn')}>Find the related lessons →</button>
               </div>
             </div>
@@ -1377,12 +1390,12 @@ function Projects({ progress, navigate }) {
 function NotFound({ navigate }) {
   return (
     <div className="not-found">
-      <p className="page-kicker"><span className="kicker-no">404</span><span className="kicker-section">Not in the manual</span></p>
-      <h1 className="display">This page<br /><em>is not printed.</em></h1>
-      <p className="lede">The address does not belong to a lesson, a specimen, or a plate. The contents are the reliable place to begin.</p>
-      <div className="masthead-actions">
-        <button type="button" className="btn-primary" onClick={() => navigate('/learn')}>Open the contents →</button>
-        <button type="button" className="btn-ghost" onClick={() => navigate('/')}>Return to the cover</button>
+      <RunningHead index="404" section="Not in the book" meta="Missing page" />
+      <h1 className="page-title">This page<br /><em>is not printed.</em></h1>
+      <p className="not-found__lede">The address does not belong to a lesson, a specimen, or a plate. The contents are the reliable place to begin.</p>
+      <div className="cover-actions">
+        <button type="button" className="btn-solid" onClick={() => navigate('/learn')}>Open the contents →</button>
+        <button type="button" className="btn-line" onClick={() => navigate('/')}>Return to the cover</button>
       </div>
     </div>
   );
@@ -1416,16 +1429,19 @@ function App() {
   }, [path]);
 
   let view;
-  let crumb = ['LearnPlainScript', 'Manual'];
+  let crumb = ['LearnPlainScript', 'Course'];
+  let pageMeta = '00';
   let title = 'LearnPlainScript · A course for PlainScript 2.3.1';
 
   if (path === '/') {
-    view = <Landing navigate={navigate} progress={progressState.progress} />;
+    view = <Cover navigate={navigate} progress={progressState.progress} />;
     crumb = ['LearnPlainScript', 'Cover'];
+    pageMeta = 'Cover';
     title = 'LearnPlainScript · An interactive companion to PlainScript';
   } else if (path === '/learn') {
     view = <Curriculum navigate={navigate} progress={progressState.progress} resetProgress={progressState.resetProgress} />;
     crumb = ['LearnPlainScript', 'Contents'];
+    pageMeta = '01';
     title = 'Contents · LearnPlainScript';
   } else if (path.startsWith('/learn/')) {
     const lesson = availableLessons.find((item) => item.id === path.slice('/learn/'.length));
@@ -1440,20 +1456,25 @@ function App() {
           saveQuiz={progressState.saveQuiz}
         />
       );
+      const index = availableLessons.indexOf(lesson);
       crumb = [`Chapter ${lesson.chapterNumber}`, lesson.title];
+      pageMeta = `${String(index + 1).padStart(2, '0')} / ${availableLessons.length}`;
       title = `${lesson.title} · LearnPlainScript`;
     } else {
       view = <NotFound navigate={navigate} />;
       crumb = ['LearnPlainScript', '404'];
+      pageMeta = '404';
       title = 'Not found · LearnPlainScript';
     }
   } else if (path === '/playground') {
     view = <Playground navigate={navigate} />;
-    crumb = ['LearnPlainScript', 'Playground'];
-    title = 'Playground · LearnPlainScript';
+    crumb = ['LearnPlainScript', 'The bench'];
+    pageMeta = 'Lab';
+    title = 'The bench · LearnPlainScript';
   } else if (path === '/quiz') {
     view = <Examination progress={progressState.progress} recordExam={progressState.recordExam} navigate={navigate} />;
     crumb = ['LearnPlainScript', 'Examination'];
+    pageMeta = '02';
     title = 'Examination · LearnPlainScript';
   } else if (path === '/flashcards') {
     view = (
@@ -1464,15 +1485,18 @@ function App() {
         navigate={navigate}
       />
     );
-    crumb = ['LearnPlainScript', 'Revision cards'];
-    title = 'Revision cards · LearnPlainScript';
+    crumb = ['LearnPlainScript', 'Revision deck'];
+    pageMeta = '03';
+    title = 'Revision deck · LearnPlainScript';
   } else if (path === '/projects') {
-    view = <Projects progress={progressState.progress} navigate={navigate} />;
+    view = <Projects navigate={navigate} />;
     crumb = ['LearnPlainScript', 'Commissions'];
+    pageMeta = '04';
     title = 'Commissions · LearnPlainScript';
   } else {
     view = <NotFound navigate={navigate} />;
     crumb = ['LearnPlainScript', '404'];
+    pageMeta = '404';
     title = 'Not found · LearnPlainScript';
   }
 
@@ -1485,7 +1509,7 @@ function App() {
   }, [path]);
 
   return (
-    <Shell path={path} navigate={navigate} progress={progressState.progress} railOpen={railOpen} setRailOpen={setRailOpen} crumb={crumb}>
+    <Shell path={path} navigate={navigate} progress={progressState.progress} railOpen={railOpen} setRailOpen={setRailOpen} crumb={crumb} pageMeta={pageMeta}>
       {view}
     </Shell>
   );
