@@ -6,19 +6,21 @@ The app includes an editorial cover, a curriculum index, lesson articles, multip
 
 ## Design
 
-The visual identity is reconstructed from the official [PlainScript manual](https://ayoistooslick.github.io/plainscript/) and its source in `docs/index.html`, `docs/style.css` and `docs/assets/`. LearnPlainScript uses the same palette (`#08070b` void, `#f2eee7` bone, `#a679ff` violet, `#ff6a3d` ember, `#d8f26b` acid), the same four typefaces (Fraunces, Newsreader, Space Grotesk, IBM Plex Mono), the same editorial grid, numbered sections, figure captions, thin rules and restrained motion.
+LearnPlainScript is designed as an interactive programming classroom, not a documentation mirror. The visual identity uses a warm paper-and-ink palette (`#F5F0E6` paper, `#25231F` ink, `#252B29` chalkboard, `#E6D6BB` notebook, `#D9E7D2` highlight) with Fraunces, Newsreader, Space Grotesk, IBM Plex Mono, and Caveat for handwritten board notes. Layouts combine a classroom entrance, a dimensional desk notebook, an interactive chalkboard with progressive writing animations, a noticeboard, and progress tracking.
 
 Five halftone plates are reused from the manual under its MIT licence; three new plates (voice, printed sheet, letterpress sort) were made for this course in the same riso and duotone direction. They live in `public/plates/`.
 
 ## Routes
 
-- `/` — cover and masthead
-- `/learn` — curriculum, progress and chapter index
+- `/` — classroom entrance, desk, whiteboard preview, noticeboard, progress
+- `/learn` — notebook contents and chapter index
 - `/learn/:lesson` — lesson article, specimen, practice and check
-- `/playground` — full editor with nine verified specimens
+- `/whiteboard` — live classroom presentation engine with handwriting-style animations
+- `/playground` — full editor with verified specimens
 - `/quiz` — the examination, one question from every lesson
 - `/flashcards` — revision deck
-- `/projects` — three practical commissions
+- `/projects` — three practical commissions (assignments)
+- `/progress` — learning progress and per-lesson status
 
 ## Local development
 
