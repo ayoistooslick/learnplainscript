@@ -171,7 +171,7 @@ export const chapters = [
       'A pipeline reads from left to right. You can use a loop when the steps are procedural or a pipeline when each step is a small transformation. Both remain ordinary compiled JavaScript at runtime.',
       [['`list of text`', 'A list whose items are text.'], ['`filter(values, predicate)`', 'Keep matching items.'], ['`map(values, transform)`', 'Create one value for each item.']],
       '#syntax 2.1\n\nimport { print } from "std/io"\nimport { map } from "std/list"\n\nvalue numbers: list of number is [1, 2, 3]\nvalue doubled is map(numbers, (number: number) => number * 2)\nprint(doubled)',
-      { prompt: 'Run the list transformation and inspect the emitted list.', starter: '#syntax 2.1\n\nimport { print } from "std/io"\nimport { map } from "std/list"\n\nvalue numbers: list of number is [1, 2, 3]\nvalue doubled is map(numbers, (number: number) => number * 2)\nprint(doubled)', expectedOutput: '[2,4,6]', hint: 'The mapper multiplies each item by two.' },
+      { prompt: 'Run the list transformation and inspect the emitted list.', starter: '#syntax 2.1\n\nimport { print } from "std/io"\nimport { map } from "std/list"\n\nvalue numbers: list of number is [1, 2, 3]\nvalue doubled is map(numbers, (number: number) => number * 2)\nprint(doubled)', expectedOutput: '2,4,6', hint: 'The mapper multiplies each item by two. The runner prints the list without brackets.' },
       { question: 'What does `map` return?', options: ['A transformed value for each item', 'Only the first item', 'A compiler error', 'A database table'], answer: 0, explanation: '`map` applies a transform to each item and returns the resulting list.' },
     ),],
   },
@@ -300,7 +300,7 @@ export const chapters = [
       [['`std/bridge`', 'Call a supported bridge from PlainScript.'], ['JSON-RPC 2.0', 'The message protocol.'], ['Manifest', 'The declared service surface.']],
       '#syntax 2.1\n\nimport { print } from "std/io"\n\nvalue bridgeName is "JSON-RPC"\nprint("A bridge is an explicit {bridgeName} contract.")',
       { prompt: 'Run the contract reminder. A real bridge also needs a service process and a manifest.', starter: '#syntax 2.1\n\nimport { print } from "std/io"\n\nvalue bridgeName is "JSON-RPC"\nprint("A bridge is an explicit {bridgeName} contract.")', expectedOutput: 'A bridge is an explicit JSON-RPC contract.', hint: 'The bridge name is just a value in this small verified example.' },
-      { question: 'What protocol does PlainScript’s cross-language bridge use?', options: ['GraphQL only', 'JSON-RPC 2.0', 'SMTP', 'WebSockets only'], answer: 1, explanation: 'The 2.2 bridge tooling uses JSON-RPC 2.0.' },
+      { question: 'What protocol does PlainScript’s cross-language bridge use?', options: ['GraphQL only', 'JSON-RPC 2.0', 'SMTP', 'WebSockets only'], answer: 1, explanation: 'The 2.3.1 bridge tooling uses JSON-RPC 2.0.' },
     ),],
   },
   {
