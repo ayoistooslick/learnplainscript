@@ -2,7 +2,7 @@
   "name": "learnplainscript",
   "version": "1.0.0",
   "private": false,
-  "description": "A practical interactive course for PlainScript 2.2.",
+  "description": "A practical interactive course for PlainScript 2.3.1.",
   "type": "module",
   "packageManager": "pnpm@10.15.0",
   "engines": {
@@ -20,7 +20,7 @@
     "express": "^5.1.0",
     "geist": "^1.9.2",
     "lucide-react": "^1.77.0",
-    "plainscript-lang": "2.2.0",
+    "plainscript-lang": "2.3.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "vite": "^6.3.5"

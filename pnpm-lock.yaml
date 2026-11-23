@@ -21,8 +21,8 @@ importers:
         specifier: ^1.77.0
         version: 1.77.0(react@19.3.1)
       plainscript-lang:
-        specifier: 2.2.0
-        version: 2.2.0
+        specifier: 2.3.1
+        version: 2.3.1
       react:
         specifier: ^19.1.1
         version: 19.3.1
@@ -948,8 +948,8 @@ packages:
     resolution: {integrity: sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA==}
     engines: {node: '>=12'}
 
-  plainscript-lang@2.2.0:
-    resolution: {integrity: sha512-YqFaHgKNqgdvNQeOk9jJTDEjgs6WfrXRiFGoazW9ZcllQcpLwmVJFzc+UcZKYH6S42FccHSW45vF62eSUavXSA==}
+  plainscript-lang@2.3.1:
+    resolution: {integrity: sha512-uIw0POqfp5lwaLVqueTItT+1H7vBpH640iB3lznt3VHzC8Ph3eoq6FakEs/wRNZL9Hjm2K/3NWAMz7aQ53+OLA==}
     engines: {node: '>=20.0.0'}
     hasBin: true
 
@@ -1919,7 +1919,7 @@ snapshots:
 
   picomatch@4.0.7: {}
 
-  plainscript-lang@2.2.0: {}
+  plainscript-lang@2.3.1: {}
 
   postcss@8.5.23:
     dependencies:

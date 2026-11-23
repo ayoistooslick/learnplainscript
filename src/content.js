@@ -1,4 +1,4 @@
-const starter = (id, title, intro, objectives, explanation, syntax, example, challenge, quiz) => ({
+const starter = (id, title, intro, objectives, explanation, syntax, example, challenge, quiz, details = {}) => ({
   id,
   title,
   intro,
@@ -9,6 +9,9 @@ const starter = (id, title, intro, objectives, explanation, syntax, example, cha
   challenge,
   quiz,
   duration: '8 min',
+  expectedOutput: details.expectedOutput || challenge?.expectedOutput || '',
+  commonMistakes: details.commonMistakes || ['Change one thing at a time, then read the compiler feedback before changing anything else.'],
+  exercise: details.exercise || challenge?.prompt || 'Run the example, make one small change, and explain what changed before you run it again.',
 });
 
 export const chapters = [
@@ -181,7 +184,7 @@ export const chapters = [
       'Modules that stay ordinary',
       'PlainScript modules compile to ES modules. Imports, exports, re-exports, and declared local runtimes work with the JavaScript ecosystem.',
       ['Import a standard-library function.', 'Recognise exported declarations.', 'Understand that modules compile to ordinary ES modules.'],
-      'A module boundary is a design decision. Export a function or type when another file needs it, then keep implementation details local. PlainScript 2.2 fixes value re-exports and declared local runtimes while keeping the output conventional.',
+      'A module boundary is a design decision. Export a function or type when another file needs it, then keep implementation details local. PlainScript 2.3.1 fixes value re-exports and declared local runtimes while keeping the output conventional.',
       [['`import { print } from "std/io"`', 'Import a named binding.'], ['`export define ...`', 'Export a function.'], ['`export type ...`', 'Export a type contract.']],
       '#syntax 2.1\n\nimport { print } from "std/io"\n\nexport define heading(topic: text) returns text\n    return "Lesson: {topic}"\nend\n\nprint(heading("modules"))',
       { prompt: 'Run the module-shaped example. In a real project, the exported function would live in its own file.', starter: '#syntax 2.1\n\nimport { print } from "std/io"\n\nexport define heading(topic: text) returns text\n    return "Lesson: {topic}"\nend\n\nprint(heading("modules"))', expectedOutput: 'Lesson: modules', hint: 'The import and export can coexist in one file for this small example.' },
@@ -227,7 +230,7 @@ export const chapters = [
     lessons: [starter(
       'regex',
       'Native regular expressions',
-      'PlainScript 2.2 treats regular-expression literals as a language feature. Patterns are validated and emitted as native `RegExp` values.',
+      'PlainScript 2.3.1 treats regular-expression literals as a language feature. Patterns are validated and emitted as native `RegExp` values.',
       ['Recognise a regex literal.', 'Keep the pattern close to the validation rule.', 'Know that regex helpers live in the standard library.'],
       'Regex is useful when the pattern is the clearest expression of a rule. Keep the pattern small, name the surrounding function, and add a normal test for an edge case.',
       [['`/pattern/flags`', 'A native regular-expression literal.'], ['`captures`', 'Read matched groups from a result.'], ['`std/text`', 'Typed text and regex helpers.']],
@@ -243,7 +246,7 @@ export const chapters = [
     lessons: [starter(
       'jsx',
       'JSX without a second language',
-      'PlainScript 2.2 parses JSX natively in `.pln` files. Components can keep typed props while compiling to React’s ordinary element calls.',
+      'PlainScript 2.3.1 parses JSX natively in `.pln` files. Components can keep typed props while compiling to React’s ordinary element calls.',
       ['Recognise a PlainScript component boundary.', 'Read JSX as part of a `.pln` file.', 'Understand the classic and automatic runtime choices.'],
       'The compiler supports classic `createElement` and automatic `jsx-runtime` modes. React’s own types remain at the boundary, while PlainScript can still check a component’s record-shaped props.',
       [['`return <p>...</p>`', 'Return a JSX element.'], ['`returns any`', 'The common React boundary type.'], ['`@jsxRuntime automatic`', 'Select the automatic runtime.']],
@@ -291,7 +294,7 @@ export const chapters = [
     lessons: [starter(
       'bridges',
       'A bridge is a boundary',
-      'PlainScript 2.2 includes JSON-RPC bridges and client generation for several languages. The goal is explicit contracts, not magical cross-language calls.',
+      'PlainScript 2.3.1 includes JSON-RPC bridges and client generation for several languages. The goal is explicit contracts, not magical cross-language calls.',
       ['Recognise JSON-RPC as the bridge protocol.', 'Keep a bridge manifest explicit.', 'Understand why the remote process needs its own limits and contract.'],
       'A bridge service should have a narrow interface, stable input and output shapes, and clear failure behavior. PlainScript can serve or call a bridge, while another language remains free to implement its side.',
       [['`std/bridge`', 'Call a supported bridge from PlainScript.'], ['JSON-RPC 2.0', 'The message protocol.'], ['Manifest', 'The declared service surface.']],
@@ -302,15 +305,59 @@ export const chapters = [
   },
   {
     number: '19',
-    title: 'Building real applications',
-    summary: 'Apply the language to a product with a clear runtime boundary.',
-    lessons: [{ id: 'applications', title: 'Application architecture', intro: 'This chapter connects language features to a full application: UI, API, persistence, tests, and deployment.', comingSoon: true }],
+    title: 'Objects and lazy work',
+    summary: 'Use the 2.3 object model and lazy iteration without hiding the runtime boundary.',
+    lessons: [starter(
+      'classes',
+      'Classes with real semantics',
+      'PlainScript 2.3 adds classes, constructors, methods, `this`, inheritance, `super`, static members, and readonly fields. They compile to native JavaScript classes.',
+      ['Define a class with a constructor and method.', 'Use `this` to read and update instance state.', 'Recognise when a class is clearer than a record and function.'],
+      'Classes are useful when state and the operations that change it belong together. The compiler checks the constructor and method contracts before emitting a normal JavaScript class. Prefer a record plus functions when the data has no lifecycle.',
+      [['`class Counter`', 'Declare a class boundary.'], ['`constructor(...)`', 'Initialise an instance.'], ['`function next() -> number`', 'Declare a typed method.']],
+      'import { print } from "std/io"\n\nclass Counter\n    value: number\n    constructor(start: number)\n        this.value = start\n    end\n    function next() -> number\n        this.value += 1\n        return this.value\n    end\nend\n\nlet counter = new Counter(2)\nprint(counter.next())',
+      { prompt: 'Run the counter, then change the starting value and predict the next number.', starter: 'import { print } from "std/io"\n\nclass Counter\n    value: number\n    constructor(start: number)\n        this.value = start\n    end\n    function next() -> number\n        this.value += 1\n        return this.value\n    end\nend\n\nlet counter = new Counter(2)\nprint(counter.next())', expectedOutput: '3', hint: 'The method increments the value before returning it.' },
+      { question: 'Which keyword refers to the current class instance?', options: ['self', 'this', 'current', 'instance'], answer: 1, explanation: '`this` is the 2.3 instance reference and is emitted as JavaScript `this`.' },
+      { expectedOutput: '3', exercise: 'Add a second `next()` call and predict both output lines.', commonMistakes: ['Use `let` for the instance binding in 2.3 examples.', 'Assign fields through `this`, not through an unqualified name.'] },
+    ), starter(
+      'generators',
+      'Generators and lazy iteration',
+      'A generator produces values one at a time. PlainScript 2.3 gives generators a checked yield type and an iterator protocol that works with `for`.',
+      ['Declare a generator function.', 'Yield values lazily with `yield`.', 'Consume an iterator with `for`.'],
+      'Generators are a good fit for sequences that should not be built in memory all at once. The annotation describes each yielded element, while the call produces an iterator of that type.',
+      [['`generator function`', 'Declare a lazy producer.'], ['`yield`', 'Return one item and pause.'], ['`for item in ...`', 'Consume an iterator.']],
+      'import { print } from "std/io"\n\ngenerator function pages(first: number, last: number) -> number\n    let page = first\n    while page <= last\n        yield page\n        page += 1\n    end\nend\n\nfor page in pages(1, 3)\n    print(page)\nend',
+      { prompt: 'Change the range to produce four pages and check that the loop consumes them in order.', starter: 'import { print } from "std/io"\n\ngenerator function pages(first: number, last: number) -> number\n    let page = first\n    while page <= last\n        yield page\n        page += 1\n    end\nend\n\nfor page in pages(1, 3)\n    print(page)\nend', expectedOutput: '1\n2\n3', hint: 'The loop runs once for each yielded number.' },
+      { question: 'What does a generator produce when it is called?', options: ['A database row', 'An iterator', 'A class definition', 'A compiled bundle'], answer: 1, explanation: 'A generator call returns an iterator whose elements use the declared yield type.' },
+      { expectedOutput: '1\n2\n3', exercise: 'Change the final argument from `3` to `4` and explain why one more line appears.', commonMistakes: ['The arrow type describes yielded items, not the iterator object itself.', 'A generator does not run its body until it is consumed.'] },
+    )],
   },
   {
     number: '20',
-    title: 'Testing, debugging and tooling',
-    summary: 'Make the compiler, formatter, tests, and debugger part of the daily loop.',
-    lessons: [{ id: 'tooling', title: 'The feedback loop', intro: 'This chapter will cover the compiler CLI, formatter, language server, debugger, and integration verification in a dedicated workflow.', comingSoon: true }],
+    title: 'Failures and the professional loop',
+    summary: 'Make typed failures, tests, packages, builds, and debugging part of everyday work.',
+    lessons: [starter(
+      'typed-errors',
+      'Typed errors and recovery',
+      'PlainScript 2.3 lets a function declare the error class it may throw. A typed catch narrows the error and rethrows values that do not match.',
+      ['Create an error class with useful fields.', 'Declare a `throws` contract.', 'Catch the declared type without hiding unrelated failures.'],
+      'A failure is part of an API contract when callers need to recover from it deliberately. Use a specific error class for a recoverable condition, and keep unexpected errors visible by allowing them to rethrow.',
+      [['`throws AppError`', 'Declare the failure type.'], ['`throw new AppError(...)`', 'Raise a typed failure.'], ['`catch error: AppError`', 'Handle only the declared class.']],
+      'import { print } from "std/io"\n\nclass AppError extends Error\n    code: number\n    constructor(message: text, code: number)\n        super(message)\n        this.code = code\n    end\nend\n\nfunction fail(code: number) throws AppError\n    throw new AppError("failed", code)\nend\n\ntry\n    fail(7)\ncatch error: AppError\n    print("{error.message} {error.code}")\nend',
+      { prompt: 'Run the typed failure example, then change the error code while keeping the contract unchanged.', starter: 'import { print } from "std/io"\n\nclass AppError extends Error\n    code: number\n    constructor(message: text, code: number)\n        super(message)\n        this.code = code\n    end\nend\n\nfunction fail(code: number) throws AppError\n    throw new AppError("failed", code)\nend\n\ntry\n    fail(7)\ncatch error: AppError\n    print("{error.message} {error.code}")\nend', expectedOutput: 'failed 7', hint: 'The catch reads the message inherited from Error and the field declared on AppError.' },
+      { question: 'What does a `throws AppError` contract constrain?', options: ['The function name', 'The class of failure it may raise', 'The number of parameters', 'The output format'], answer: 1, explanation: 'The compiler checks that thrown values are compatible with the declared error class.' },
+      { expectedOutput: 'failed 7', exercise: 'Add a `retryable: boolean` field and print it from the catch block.', commonMistakes: ['A typed catch is not a blanket catch for every error.', 'The thrown value must be an instance of the declared class or a subclass.'] },
+    ), starter(
+      'toolchain',
+      'From source to a tested package',
+      'A serious PlainScript project uses the compiler feedback loop: check source, format it, build modules, run tests, and bundle only when the deployment boundary needs one module.',
+      ['Separate checking from execution.', 'Recognise build, test, format, and bundle as different jobs.', 'Keep package and platform boundaries explicit.'],
+      'PlainScript 2.3 adds an incremental build cache, a bundler, an optimiser, and stronger TypeScript declaration import. The standard library also adds iterators, reflection, BigInt, environment access, process, crypto, compression, streams, workers, and networking. Database, HTTP, files, JSON, and package work still cross a deliberate Node or browser boundary; teach those integrations with the installed driver and the project’s tests rather than pretending they are portable everywhere.',
+      [['`plainscript check`', 'Type-check without running.'], ['`plainscript build`', 'Emit modules and declarations.'], ['`plainscript bundle`', 'Emit one ESM deployment artifact.']],
+      'import { print } from "std/io"\n\nlet stages = ["check", "test", "build"]\nfor stage in stages\n    print("stage: {stage}")\nend',
+      { prompt: 'Run the workflow example, then add `format` to the stages list and explain where it belongs in your local loop.', starter: 'import { print } from "std/io"\n\nlet stages = ["check", "test", "build"]\nfor stage in stages\n    print("stage: {stage}")\nend', expectedOutput: 'stage: check\nstage: test\nstage: build', hint: 'The example models a workflow as data; the actual commands are run in your project terminal.' },
+      { question: 'Which command checks types without executing a program?', options: ['plainscript check', 'plainscript serve', 'plainscript publish', 'plainscript watch'], answer: 0, explanation: '`plainscript check` validates source without running its side effects.' },
+      { expectedOutput: 'stage: check\nstage: test\nstage: build', exercise: 'Add a `bundle` stage only after the test stage and explain why bundling is a deployment concern.', commonMistakes: ['Do not treat a workflow description as the compiler itself.', 'Node-only modules such as workers and networking need an explicit runtime boundary.'] },
+    )],
   },
 ];
 

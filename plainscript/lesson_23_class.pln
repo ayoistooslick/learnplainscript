@@ -1,0 +1,15 @@
+import { print } from "std/io"
+
+class Counter
+    value: number
+    constructor(start: number)
+        this.value = start
+    end
+    function next() -> number
+        this.value += 1
+        return this.value
+    end
+end
+
+let counter = new Counter(2)
+print(counter.next())
