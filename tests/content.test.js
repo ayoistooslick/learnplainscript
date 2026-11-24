@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import packageJson from '../package.json' with { type: 'json' };
-import { chapters, availableLessons, flashcards, projects } from '../src/content.js';
+import { chapters, availableLessons, plainWords, projects } from '../src/content.js';
 import { runPlainScript } from '../server/runner.js';
 
 test('curriculum has the requested 20 chapters and a useful supported path', () => {
@@ -16,8 +16,11 @@ test('the learning product uses the verified PlainScript 2.3.1 package', () => {
   assert.equal(packageJson.dependencies['plainscript-lang'], '2.3.1');
 });
 
-test('review and project content is present', () => {
-  assert.equal(flashcards.length, 7);
+test('every lesson has a plain-language summary for new readers', () => {
+  assert.ok(availableLessons.every((lesson) => (plainWords[lesson.id] || '').length > 40));
+});
+
+test('project content is present', () => {
   assert.equal(projects.length, 3);
   assert.ok(projects.every((project) => project.requirements.length > 0 && project.criteria));
 });

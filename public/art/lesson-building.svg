@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="A student building a small web page on a laptop at a desk">
+  <defs>
+    <pattern id="grain" width="7" height="7" patternUnits="userSpaceOnUse">
+      <circle cx="1.5" cy="1.5" r="0.7" fill="#25231F" opacity="0.05" />
+    </pattern>
+    <linearGradient id="lamp" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F2D89B" stop-opacity="0.7" />
+      <stop offset="1" stop-color="#F2D89B" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="#F5F0E6" />
+  <rect width="800" height="474" fill="#EFE7D8" />
+  <rect y="474" width="800" height="126" fill="#E6D6BB" />
+  <line x1="0" y1="474" x2="800" y2="474" stroke="#CBB894" stroke-width="3" />
+
+  <!-- lamp glow -->
+  <path d="M640 40 L430 474 L800 474 L800 150 Z" fill="url(#lamp)" />
+  <path d="M696 66 l-16 66" stroke="#25231F" stroke-width="5" />
+  <path d="M640 130 q40 -34 88 0 l-20 34 h-48 Z" fill="#C96442" stroke="#25231F" stroke-width="4" stroke-linejoin="round" />
+
+  <!-- floating browser window -->
+  <g transform="rotate(-2 300 170)">
+    <rect x="120" y="74" width="330" height="200" rx="6" fill="#FBF7EE" stroke="#25231F" stroke-width="4" />
+    <path d="M120 112 h330" stroke="#25231F" stroke-width="3" />
+    <circle cx="140" cy="93" r="6" fill="#C96442" />
+    <circle cx="160" cy="93" r="6" fill="#D9E7D2" />
+    <circle cx="180" cy="93" r="6" fill="#E6D6BB" />
+    <rect x="146" y="132" width="110" height="54" rx="3" fill="#D9E7D2" />
+    <rect x="268" y="132" width="150" height="12" rx="3" fill="#C9A272" />
+    <rect x="268" y="154" width="120" height="10" rx="3" fill="#E6D6BB" />
+    <rect x="268" y="172" width="96" height="10" rx="3" fill="#E6D6BB" />
+    <rect x="146" y="204" width="272" height="12" rx="3" fill="#E6D6BB" />
+    <rect x="146" y="228" width="196" height="12" rx="3" fill="#E6D6BB" />
+  </g>
+
+  <!-- blocks -->
+  <g stroke="#25231F" stroke-width="4" stroke-linejoin="round">
+    <rect x="510" y="120" width="54" height="54" rx="4" fill="#C96442" transform="rotate(8 510 120)" />
+    <rect x="580" y="86" width="44" height="44" rx="4" fill="#D9E7D2" transform="rotate(-8 580 86)" />
+    <rect x="566" y="176" width="40" height="40" rx="4" fill="#E6D6BB" transform="rotate(5 566 176)" />
+  </g>
+
+  <!-- desk -->
+  <rect x="90" y="404" width="630" height="22" rx="4" fill="#C9A272" stroke="#25231F" stroke-width="4" />
+  <path d="M132 426 v104 M678 426 v104" stroke="#8B5E3C" stroke-width="10" stroke-linecap="round" />
+
+  <!-- laptop -->
+  <path d="M256 404 l206 0 l0 -112 l-206 0 Z" fill="#3A3630" stroke="#25231F" stroke-width="4" stroke-linejoin="round" />
+  <rect x="272" y="308" width="174" height="80" fill="#252B29" />
+  <g stroke-linecap="round" stroke-width="5">
+    <path d="M290 330 h56" stroke="#C9A0FF" />
+    <path d="M290 348 h92" stroke="#A8D8A0" />
+    <path d="M290 366 h70" stroke="#E8A97A" />
+    <path d="M356 330 h44" stroke="#A8D8A0" />
+  </g>
+  <path d="M240 404 h238 l18 16 h-274 Z" fill="#4A463F" stroke="#25231F" stroke-width="4" stroke-linejoin="round" />
+
+  <!-- student beside the laptop -->
+  <g>
+    <path d="M470 474 q0 -96 68 -96 q68 0 68 96 Z" fill="#7E9A72" stroke="#25231F" stroke-width="4" stroke-linejoin="round" />
+    <circle cx="538" cy="330" r="44" fill="#E8B98D" stroke="#25231F" stroke-width="4" />
+    <path d="M494 328 q-2 -58 46 -58 q48 0 44 56 q-38 -18 -90 2 Z" fill="#3A2A22" stroke="#25231F" stroke-width="4" stroke-linejoin="round" />
+    <circle cx="524" cy="330" r="3.3" fill="#25231F" />
+    <circle cx="554" cy="330" r="3.3" fill="#25231F" />
+    <path d="M530 348 q9 9 18 0" stroke="#25231F" stroke-width="3" stroke-linecap="round" fill="none" />
+    <path d="M488 412 q-70 4 -132 0" stroke="#7E9A72" stroke-width="21" stroke-linecap="round" fill="none" />
+    <path d="M356 412 q-20 0 -30 -6" stroke="#E8B98D" stroke-width="15" stroke-linecap="round" fill="none" />
+  </g>
+
+  <!-- mug and notebook -->
+  <rect x="160" y="368" width="38" height="34" rx="4" fill="#D9E7D2" stroke="#25231F" stroke-width="4" />
+  <path d="M198 376 q14 0 14 11 q0 10 -14 10" stroke="#25231F" stroke-width="4" fill="none" />
+  <path d="M620 402 l86 -10 l6 14 l-86 10 Z" fill="#FBF7EE" stroke="#25231F" stroke-width="3" />
+
+  <rect width="800" height="600" fill="url(#grain)" />
+</svg>

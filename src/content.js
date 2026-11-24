@@ -364,15 +364,33 @@ export const chapters = [
 export const lessons = chapters.flatMap((chapter) => chapter.lessons.map((lesson) => ({ ...lesson, chapter: chapter.title, chapterNumber: chapter.number })));
 export const availableLessons = lessons.filter((lesson) => !lesson.comingSoon);
 
-export const flashcards = [
-  { id: 'card-value', question: 'What introduces an immutable binding in PlainScript 2.1?', answer: '`value total is 0` — `value` makes the binding immutable.' },
-  { id: 'card-set', question: 'What are the three words for mutable state?', answer: '`set count to 0`, then `change count to count + 1`.' },
-  { id: 'card-function', question: 'How do you declare a typed function?', answer: '`define greet(name: text) returns text ... end`.' },
-  { id: 'card-optional', question: 'What does `number?` mean?', answer: 'An optional number. The value may be a number or `nothing`.' },
-  { id: 'card-record', question: 'How are records checked?', answer: 'Structurally: the checker follows the fields a value provides.' },
-  { id: 'card-jsx', question: 'Where can JSX be written?', answer: 'Directly in `.pln` files; the compiler lowers it to React element calls or the automatic runtime.' },
-  { id: 'card-output', question: 'What does PlainScript compile to?', answer: 'Ordinary ES modules that can run on the JavaScript platform.' },
-];
+/* One-sentence summaries for readers who are new to code. These sit at the
+   top of each lesson, before the fuller explanation. */
+export const plainWords = {
+  'why-plainscript': 'PlainScript is a programming language you can read almost like English. You write a file, the computer checks it, and it turns into JavaScript that runs.',
+  'first-program': 'A program is a list of instructions, read from top to bottom. You bring in a printing tool, define a function, then call it.',
+  'syntax-structure': 'A block has a clear beginning and a clear end. The word `end` shows you exactly where a block stops.',
+  'values': 'A `value` can never change. A `set` can change later with `change`. The word tells you which one you are looking at.',
+  'types': 'A type says what kind of thing a value is: a number, some text, or true and false. PlainScript checks types before the program runs.',
+  'operators': 'Operators combine values. PlainScript keeps symbols like + and *, and writes comparisons as phrases such as `is at least`.',
+  'control-flow': '`when` chooses between two paths. `for each` repeats the same work for every item in a list.',
+  'functions': 'A function is a named piece of work with inputs and one output. Give it a clear name and say what it returns.',
+  'records': 'A record groups related values under named fields, like a form with labelled boxes.',
+  'iteration': 'A list holds many values. `map` changes every item and hands you a new list.',
+  'modules': 'A module is one file. `import` brings something in, and `export` lets another file use it.',
+  'errors': 'Some things fail while a program is running. `try` and `catch` let you handle the failure instead of crashing.',
+  'async': 'Asynchronous work finishes later, not on the same line. `await` waits for the answer before carrying on.',
+  'regex': 'A regular expression describes a text pattern, such as “digits only”.',
+  'jsx': 'JSX lets you write HTML-like markup inside PlainScript. The compiler turns it into React calls.',
+  'react': 'React draws the screen from small components. PlainScript components are ordinary React components.',
+  'interop': 'PlainScript produces normal JavaScript modules, so it can use npm packages and browser features.',
+  'bridges': 'A bridge lets two programs written in different languages talk to each other over JSON-RPC messages.',
+  'classes': 'A class bundles data together with the functions that work on it. `this` means the current object.',
+  'generators': 'A generator produces one value at a time, only when asked, instead of building a whole list in memory.',
+  'typed-errors': 'You can declare which kind of error a function may throw, and catch only that kind.',
+  'toolchain': 'Real projects move through steps: check, test, build, then ship. Each step catches a different problem.',
+};
+
 
 export const projects = [
   {

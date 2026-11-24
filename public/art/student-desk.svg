@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="A teenage student at a desk with a laptop, notebook and chalkboard">
+  <defs>
+    <pattern id="grain" width="7" height="7" patternUnits="userSpaceOnUse">
+      <circle cx="1.5" cy="1.5" r="0.7" fill="#25231F" opacity="0.05" />
+    </pattern>
+    <linearGradient id="sun" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F2D89B" stop-opacity="0.8" />
+      <stop offset="1" stop-color="#F2D89B" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="#F5F0E6" />
+  <rect width="800" height="470" fill="#EFE7D8" />
+  <rect y="470" width="800" height="130" fill="#E6D6BB" />
+  <line x1="0" y1="470" x2="800" y2="470" stroke="#CBB894" stroke-width="3" />
+
+  <!-- window light -->
+  <rect x="585" y="70" width="150" height="205" rx="3" fill="#F7EBC9" stroke="#8B5E3C" stroke-width="5" />
+  <line x1="660" y1="70" x2="660" y2="275" stroke="#8B5E3C" stroke-width="4" />
+  <line x1="585" y1="172" x2="735" y2="172" stroke="#8B5E3C" stroke-width="4" />
+  <path d="M585 95 L520 470 L800 470 L800 95 Z" fill="url(#sun)" />
+
+  <!-- chalkboard -->
+  <rect x="58" y="92" width="300" height="184" rx="4" fill="#B08A5C" />
+  <rect x="70" y="104" width="276" height="160" rx="2" fill="#252B29" />
+  <g stroke="#BFC9BE" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.9">
+    <path d="M96 140 h96" />
+    <path d="M96 164 h60" />
+    <path d="M96 188 h120" />
+    <path d="M96 212 h44" />
+    <path d="M240 146 l50 0 l0 -34" />
+    <circle cx="290" cy="152" r="18" stroke="#D9E7D2" />
+    <path d="M262 214 q26 -26 52 0" stroke="#C96442" />
+  </g>
+  <rect x="66" y="270" width="284" height="10" rx="3" fill="#C9A272" />
+
+  <!-- chair -->
+  <path d="M268 372 v92" stroke="#8B5E3C" stroke-width="9" stroke-linecap="round" />
+  <path d="M236 372 q34 -14 66 0" stroke="#8B5E3C" stroke-width="9" stroke-linecap="round" fill="none" />
+
+  <!-- student -->
+  <g>
+    <path d="M262 336 q0 -38 74 -38 q74 0 74 38 l12 64 q-86 18 -172 0 Z" fill="#7E9A72" stroke="#25231F" stroke-width="4" stroke-linejoin="round" />
+    <path d="M262 358 q-20 22 -16 48 q2 18 22 18 q18 0 22 -22 l-6 -42 Z" fill="#7E9A72" stroke="#25231F" stroke-width="4" stroke-linejoin="round" />
+    <circle cx="336" cy="236" r="48" fill="#E8B98D" stroke="#25231F" stroke-width="4" />
+    <path d="M288 232 q-4 -62 52 -62 q52 0 50 58 q-18 -22 -46 -24 q-30 -2 -56 28 Z" fill="#3A2A22" stroke="#25231F" stroke-width="4" stroke-linejoin="round" />
+    <path d="M312 246 q10 10 20 0" stroke="#25231F" stroke-width="3.5" stroke-linecap="round" fill="none" />
+    <circle cx="318" cy="234" r="3.4" fill="#25231F" />
+    <circle cx="354" cy="234" r="3.4" fill="#25231F" />
+    <path d="M356 336 q46 22 66 58" stroke="#7E9A72" stroke-width="22" stroke-linecap="round" fill="none" />
+    <path d="M420 392 q18 6 26 0" stroke="#E8B98D" stroke-width="16" stroke-linecap="round" fill="none" />
+    <path d="M312 312 q22 16 44 0" stroke="#25231F" stroke-width="3" stroke-linecap="round" opacity="0.5" fill="none" />
+  </g>
+
+  <!-- desk -->
+  <rect x="96" y="402" width="608" height="22" rx="4" fill="#C9A272" stroke="#25231F" stroke-width="4" />
+  <path d="M136 424 v112 M664 424 v112" stroke="#8B5E3C" stroke-width="10" stroke-linecap="round" />
+  <path d="M118 486 h564" stroke="#B08A5C" stroke-width="6" opacity="0.6" />
+
+  <!-- laptop -->
+  <path d="M470 402 l130 0 l24 -86 l-120 0 Z" fill="#3A3630" stroke="#25231F" stroke-width="4" stroke-linejoin="round" />
+  <path d="M488 392 l96 0 l16 -64 l-92 0 Z" fill="#252B29" />
+  <g stroke-linecap="round" stroke-width="4">
+    <path d="M500 352 h40" stroke="#C9A0FF" />
+    <path d="M500 366 h58" stroke="#A8D8A0" />
+    <path d="M512 380 h44" stroke="#E8A97A" />
+    <path d="M512 340 h26" stroke="#A8D8A0" />
+  </g>
+  <path d="M452 402 h158 l16 16 h-186 Z" fill="#4A463F" stroke="#25231F" stroke-width="4" stroke-linejoin="round" />
+
+  <!-- notebook, pencil, mug -->
+  <path d="M182 400 l86 -12 l12 22 l-86 12 Z" fill="#FBF7EE" stroke="#25231F" stroke-width="3" />
+  <path d="M190 398 l80 -11" stroke="#CBB894" stroke-width="3" />
+  <path d="M196 388 l10 -3 l4 24" stroke="#C96442" stroke-width="6" stroke-linecap="round" />
+  <rect x="386" y="372" width="34" height="30" rx="4" fill="#D9E7D2" stroke="#25231F" stroke-width="4" />
+  <path d="M420 380 q12 0 12 10 q0 9 -12 9" stroke="#25231F" stroke-width="4" fill="none" />
+
+  <!-- plant -->
+  <path d="M706 402 q-22 -44 4 -76 q26 34 8 76" fill="#7E9A72" stroke="#25231F" stroke-width="4" />
+  <path d="M714 402 q26 -34 2 -58" fill="none" stroke="#25231F" stroke-width="4" />
+  <path d="M682 402 h50 l-8 40 h-34 Z" fill="#C96442" stroke="#25231F" stroke-width="4" stroke-linejoin="round" />
+
+  <rect width="800" height="600" fill="url(#grain)" />
+</svg>
