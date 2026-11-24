@@ -14,6 +14,7 @@ import { gardenStages, lessonStage, lessonTopics, relatedLessons, topicList } fr
 import './styles.css';
 
 const STORAGE_KEY = 'learnplainscript.progress.v1';
+const THEME_KEY = 'learnplainscript.theme.v1';
 const defaultProgress = {
   completedLessons: [],
   completedChallenges: [],
@@ -60,6 +61,14 @@ function loadProgress() {
       examAnswers: saved.examAnswers && typeof saved.examAnswers === 'object' ? saved.examAnswers : {},
     };
   } catch { return defaultProgress; }
+}
+
+function loadTheme() {
+  try {
+    const saved = window.localStorage.getItem(THEME_KEY);
+    if (saved === 'dark' || saved === 'light') return saved;
+  } catch { /* private browsing */ }
+  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
 function useProgress() {
@@ -199,7 +208,24 @@ function Masthead({ path, navigate, progress, onMenu, reading }) {
   );
 }
 
-function Drawer({ open, onClose, navigate, progress }) {
+function ThemeSwitch({ theme, onChange }) {
+  const dark = theme === 'dark';
+  return (
+    <button
+      type="button"
+      className={`theme-switch${dark ? ' is-dark' : ''}`}
+      role="switch"
+      aria-checked={dark}
+      aria-label={`Switch to ${dark ? 'light' : 'dark'} theme`}
+      onClick={() => onChange(dark ? 'light' : 'dark')}
+    >
+      <span className="theme-switch__track" aria-hidden="true"><i /></span>
+      <span className="theme-switch__label">{dark ? 'Dark' : 'Light'}</span>
+    </button>
+  );
+}
+
+function Drawer({ open, onClose, navigate, progress, theme, onThemeChange }) {
   const next = nextLessonFor(progress);
   const done = progress.completedLessons.length;
   const percent = Math.round((done / availableLessons.length) * 100);
@@ -230,6 +256,10 @@ function Drawer({ open, onClose, navigate, progress }) {
             </button>
           ))}
         </nav>
+        <div className="drawer-theme">
+          <span className="drawer-label">Appearance</span>
+          <ThemeSwitch theme={theme} onChange={onThemeChange} />
+        </div>
         <div className="drawer-edition">
           <p className="drawer-label">Your place in the course</p>
           <p className="drawer-percent">{percent}<span>%</span></p>
@@ -274,7 +304,7 @@ function MobileTabs({ path, navigate }) {
   );
 }
 
-function Shell({ path, navigate, progress, railOpen, setRailOpen, children }) {
+function Shell({ path, navigate, progress, railOpen, setRailOpen, theme, onThemeChange, children }) {
   const [reading, setReading] = useState(0);
   useEffect(() => {
     const onScroll = () => {
@@ -298,7 +328,7 @@ function Shell({ path, navigate, progress, railOpen, setRailOpen, children }) {
       <main id="main" className="page">{children}</main>
       <Colophon navigate={go} />
       <MobileTabs path={path} navigate={go} />
-      <Drawer open={railOpen} onClose={() => setRailOpen(false)} navigate={go} progress={progress} />
+      <Drawer open={railOpen} onClose={() => setRailOpen(false)} navigate={go} progress={progress} theme={theme} onThemeChange={onThemeChange} />
     </div>
   );
 }
@@ -1347,7 +1377,12 @@ function routePath() { return window.location.pathname.replace(/\/+$/, '') || '/
 function App() {
   const [path, setPath] = useState(routePath);
   const [railOpen, setRailOpen] = useState(false);
+  const [theme, setTheme] = useState(loadTheme);
   const progressState = useProgress();
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    try { window.localStorage.setItem(THEME_KEY, theme); } catch { /* private browsing */ }
+  }, [theme]);
   useEffect(() => {
     const onPop = () => setPath(routePath());
     window.addEventListener('popstate', onPop);
@@ -1416,7 +1451,7 @@ function App() {
   useEffect(() => { document.title = title; }, [title]);
   useEffect(() => { if (!window.location.hash) window.scrollTo(0, 0); }, [path]);
   return (
-    <Shell path={path} navigate={navigate} progress={progressState.progress} railOpen={railOpen} setRailOpen={setRailOpen}>
+    <Shell path={path} navigate={navigate} progress={progressState.progress} railOpen={railOpen} setRailOpen={setRailOpen} theme={theme} onThemeChange={setTheme}>
       {view}
     </Shell>
   );
