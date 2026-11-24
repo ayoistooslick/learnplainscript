@@ -35,8 +35,8 @@ export function Output({ result, compact = false }) {
   return (
     <div className={`output is-${result.status}`} aria-live="polite">
       <div className="output-bar">
-        <span>stdout</span>
-        <span>{running ? 'compiling…' : result.status === 'ok' ? `exit 0 · ${result.duration}ms` : result.status === 'error' ? 'exit 1' : 'idle'}</span>
+        <span className="out-label">Out [ ]</span>
+        <span>{running ? 'compiling…' : result.status === 'ok' ? `exit 0 · ${result.duration}ms` : result.status === 'error' ? 'exit 1' : 'ready'}</span>
       </div>
       {result.status === 'idle' && <p className="output-empty">Run the program to read its output.</p>}
       {running && <p className="output-empty">Calling the published 2.3.1 compiler…</p>}

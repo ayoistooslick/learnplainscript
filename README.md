@@ -9,23 +9,25 @@ No account, install, or prior coding experience is needed. Progress is saved in 
 - **One clear path.** 22 lessons in reading order, with the next lesson always marked and one button that continues where you stopped.
 - **Real execution.** Every runnable example calls `POST /api/run`, which compiles and executes the published `plainscript-lang@2.3.1` package in a short-lived child process. Nothing in the browser pretends to interpret PlainScript.
 - **A teaching loop inside each lesson.** A plain-language explanation, a "guess the output" checkpoint checked against the real compiler, an editable specimen, a close-up of the words used, common mistakes, a practice challenge, and one multiple-choice check.
-- **Beginner-friendly navigation.** Five main rooms (Start, Lessons, Whiteboard, Code playground, Practice test) plus progress and mini projects. On phones there is a bottom tab bar and a working slide-out menu.
-- **Four hand-drawn illustrations** in `public/art/` that follow the paper-and-ink classroom theme and show a student at work.
+- **Beginner-friendly navigation.** An editorial masthead and section navigation for the front page, lessons, lecture board, playground, practice test, projects and progress. On phones there is a bottom tab bar and a working slide-out menu.
+- **Halftone editorial plates** in `public/art/`, including an original letterpress type-case illustration, treated as printed matter rather than decorative 3D objects.
 
 ## Routes
 
 - `/` — start page: what the course is, how a lesson works, a live first program, and the path
 - `/learn` — all lessons, with finished ones ticked
 - `/learn/:lesson` — lesson article, prediction, editable specimen, practice and check
-- `/whiteboard` — live classroom board with stroke-by-stroke teaching, diagrams, markers and annotations
+- `/whiteboard` — the lecture board: stroke-by-stroke teaching, diagrams, markers, annotations and a compiler-backed specimen
 - `/playground` — full editor with verified example programs
 - `/quiz` — practice test, one question from every lesson
 - `/projects` — three open-ended mini projects
 - `/progress` — progress and per-lesson status
 
-## Design
+## Design — The Classroom Edition
 
-Warm paper-and-ink palette (`#F5F0E6` paper, `#25231F` ink, `#252B29` chalkboard, `#E6D6BB` notebook, `#D9E7D2` highlight, `#C96442` accent) with Fraunces, Newsreader, Space Grotesk, IBM Plex Mono and Caveat. Motion is minimal and respects `prefers-reduced-motion`.
+The interface is built as a twentieth-century editorial publication that happens to teach programming. Warm ivory paper (`#F2EBDD`), near-black ink (`#17130E`) and a muted oxblood accent (`#7A1F2B`) carry the hierarchy; fine rules, asymmetric columns, drop caps, pull quotes and folios do the structural work. Fraunces sets the masthead and display headlines, Newsreader carries the reading text, Space Grotesk is reserved for interface labels, and IBM Plex Mono handles code and folios. Subtle CSS paper grain and halftone plates supply tactility without shadows or glass.
+
+Lesson pages are typeset as technical articles with a margin column, then become notebook cells for the interactive parts. Code cells use a Jupyter-like `In [ ]` / `Out [ ]` gutter, warm paper editor surfaces, restrained syntax colour and clear run controls. The old 3D room and decorative motion are gone; only the lecture board's meaningful stroke playback remains, and it respects `prefers-reduced-motion`. The layout reflows deliberately at tablet and phone widths rather than shrinking the broadsheet.
 
 ## Local development
 

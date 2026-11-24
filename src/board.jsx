@@ -16,10 +16,10 @@ import { useRunner } from './runner.jsx';
 ------------------------------------------------------------------- */
 
 const MARKERS = [
-  { id: 'chalk', label: 'Chalk', color: '#E8EFE6' },
-  { id: 'mint', label: 'Mint', color: '#D9E7D2' },
-  { id: 'amber', label: 'Amber', color: '#F0C882' },
-  { id: 'coral', label: 'Coral', color: '#E8927A' },
+  { id: 'chalk', label: 'Chalk', color: '#EDE6D7' },
+  { id: 'mint', label: 'Sage', color: '#CDD9BF' },
+  { id: 'amber', label: 'Amber', color: '#E4C48D' },
+  { id: 'coral', label: 'Rose', color: '#D2A8A0' },
 ];
 
 const INK_KEY = 'learnplainscript.board.ink.v1';
@@ -396,7 +396,7 @@ export function Whiteboard({ navigate, progress, saveNote, saveQuiz }) {
   const diagram = diagramFor(lesson);
 
   const [pageIndex, setPageIndex] = useState(0);
-  const [revealed, setRevealed] = useState(1);
+  const [revealed, setRevealed] = useState(3);
   const [playing, setPlaying] = useState(false);
   const [zoom, setZoom] = useState(false);
   const [marker, setMarker] = useState(MARKERS[0]);
@@ -415,7 +415,7 @@ export function Whiteboard({ navigate, progress, saveNote, saveQuiz }) {
   useEffect(() => {
     setNote(progress.notes?.[lessonId] || '');
     setPageIndex(0);
-    setRevealed(1);
+    setRevealed(3);
     setPlaying(false);
     setQuizChoice(null);
     setInk({ lesson: lessonId, paths: loadInk()[lessonId] || [] });
@@ -539,24 +539,31 @@ export function Whiteboard({ navigate, progress, saveNote, saveQuiz }) {
 
   return (
     <div className="whiteboard-page board-page">
-      <div className="running-head"><span>Live classroom · Whiteboard</span><span>{lesson.title}</span></div>
-      <div className="board-intro">
-        <h1 className="page-title">The board,<br /><em>in strokes.</em></h1>
-        <p>A teaching surface, not a slideshow. Content is written onto the board one stroke at a time. Draw on it with four markers, run the specimen against the real compiler, answer the check on the board, and keep notes underneath.</p>
+      <div className="board-head">
+        <div>
+          <p className="eyebrow">The lecture board · PlainScript 2.3.1</p>
+          <h1>The board,<br /><em>in strokes.</em></h1>
+          <p>A teaching surface, not a slideshow. The lesson is written on one stroke at a time. Draw on it, run the specimen against the real compiler, answer the check on the board, and keep notes beneath it.</p>
+        </div>
+        <div className="board-folio">
+          <span className="folio-label">Now teaching</span>
+          <b>{lesson.title}</b>
+          <span>Chapter {lesson.chapterNumber} · {lesson.duration}</span>
+        </div>
       </div>
 
       <div className="board-toolbar" role="toolbar" aria-label="Whiteboard controls">
-        <select className="wb-select" value={lessonId} onChange={(event) => setLessonId(event.target.value)} aria-label="Choose lesson">
+        <select className="board-select" value={lessonId} onChange={(event) => setLessonId(event.target.value)} aria-label="Choose lesson">
           {availableLessons.map((item) => <option key={item.id} value={item.id}>{item.chapterNumber}. {item.title}</option>)}
         </select>
-        <button type="button" className="btn-solid small" onClick={() => setPlaying((value) => !value)}>
+        <button type="button" className="button button--red button--small" onClick={() => setPlaying((value) => !value)}>
           {playing ? <Pause size={12} strokeWidth={2.2} aria-hidden="true" /> : <Play size={12} strokeWidth={2.2} aria-hidden="true" />}
           {playing ? 'Pause' : 'Play'}
         </button>
-        <button type="button" className="btn-line small" onClick={nextStroke} disabled={pageIndex === pages.length - 1 && revealed >= total}>
+        <button type="button" className="button button--line button--small" onClick={nextStroke} disabled={pageIndex === pages.length - 1 && revealed >= total}>
           Next stroke <ChevronRight size={13} strokeWidth={2.2} aria-hidden="true" />
         </button>
-        <button type="button" className="btn-line small" onClick={previousStroke} disabled={pageIndex === 0 && revealed === 1}>
+        <button type="button" className="button button--line button--small" onClick={previousStroke} disabled={pageIndex === 0 && revealed === 1}>
           <ChevronLeft size={13} strokeWidth={2.2} aria-hidden="true" /> Back
         </button>
         <span className="board-counter">
@@ -579,12 +586,12 @@ export function Whiteboard({ navigate, progress, saveNote, saveQuiz }) {
           <button type="button" className={`marker-style ${tool === 'marker' ? 'on' : ''}`} onClick={() => setTool('marker')} aria-pressed={tool === 'marker'}>Marker</button>
         </div>
 
-        <button type="button" className={`btn-line small ${inkMode ? 'is-on' : ''}`} onClick={() => setInkMode((value) => !value)} aria-pressed={inkMode}>
+        <button type="button" className={`button button--line button--small${inkMode ? ' is-on' : ''}`} onClick={() => setInkMode((value) => !value)} aria-pressed={inkMode}>
           {inkMode ? 'Drawing on' : 'Draw on board'}
         </button>
-        <button type="button" className="icon-btn" onClick={() => setInk({ lesson: lessonId, paths: [] })} aria-label="Clear board annotations" title="Clear annotations"><Trash2 size={14} strokeWidth={1.8} aria-hidden="true" /></button>
-        <button type="button" className="icon-btn" onClick={() => setZoom((value) => !value)} aria-label={zoom ? 'Zoom out' : 'Zoom in'}>{zoom ? '−' : '+'}</button>
-        <button type="button" className="link-quiet" onClick={() => navigate(`/learn/${lesson.id}`)}>Read the lesson ↗</button>
+        <button type="button" className="icon-button" onClick={() => setInk({ lesson: lessonId, paths: [] })} aria-label="Clear board annotations" title="Clear annotations"><Trash2 size={14} strokeWidth={1.8} aria-hidden="true" /></button>
+        <button type="button" className="icon-button" onClick={() => setZoom((value) => !value)} aria-label={zoom ? 'Zoom out' : 'Zoom in'}>{zoom ? '−' : '+'}</button>
+        <button type="button" className="link-button" onClick={() => navigate(`/learn/${lesson.id}`)}>Read the lesson ↗</button>
       </div>
 
       <div className={`wb-stage board-stage${zoom ? ' is-zoomed' : ''}${inkMode ? ' is-inking' : ''}`}>
