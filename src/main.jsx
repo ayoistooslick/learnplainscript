@@ -10,6 +10,7 @@ import { Editor } from './editor.jsx';
 import { Output, useRunner } from './runner.jsx';
 import { Whiteboard } from './board.jsx';
 import { PredictRun, TryIt } from './interactive.jsx';
+import { gardenStages, lessonStage, lessonTopics, relatedLessons, topicList } from './garden.js';
 import './styles.css';
 
 const STORAGE_KEY = 'learnplainscript.progress.v1';
@@ -657,17 +658,71 @@ function LessonPath({ progress, navigate, compact = false, limit }) {
   );
 }
 
+function GrowthBadge({ stage }) {
+  const item = gardenStages.find((entry) => entry.id === stage) || gardenStages[0];
+  return <span className={`growth-badge growth-badge--${stage}`} title={item.description}><i aria-hidden="true" />{item.label}</span>;
+}
+
+function TopicLink({ topic, onSelect }) {
+  return onSelect ? <button type="button" className="topic-link" onClick={() => onSelect(topic)}>{topic}</button> : <span className="topic-link">{topic}</span>;
+}
+
+function LessonPreview({ lesson, navigate, children }) {
+  return (
+    <span className="lesson-preview-wrap">
+      <button type="button" className="concept-link" onClick={() => navigate(`/learn/${lesson.id}`)}>{children}</button>
+      <span className="lesson-preview" role="tooltip">
+        <span className="lesson-preview__label">Lesson {lesson.chapterNumber}</span>
+        <b>{lesson.title}</b>
+        <small>{lesson.intro}</small>
+      </span>
+    </span>
+  );
+}
+
+function GardenCard({ lesson, progress, navigate }) {
+  const done = progress.completedLessons.includes(lesson.id);
+  const stage = lessonStage(lesson);
+  return (
+    <article className={`garden-card garden-card--${stage}${done ? ' is-done' : ''}`}>
+      <div className="garden-card__top"><span>{lesson.chapterNumber}</span><GrowthBadge stage={stage} /></div>
+      <h3><LessonPreview lesson={lesson} navigate={navigate}>{lesson.title}</LessonPreview></h3>
+      <p>{lesson.intro}</p>
+      <div className="garden-card__topics">{lessonTopics(lesson).map((topic) => <TopicLink key={topic} topic={topic} />)}</div>
+      <button type="button" className="garden-card__footer" onClick={() => navigate(`/learn/${lesson.id}`)}>
+        <span>{done ? 'Read again' : 'Explore lesson'}</span><ArrowRight size={14} aria-hidden="true" />
+      </button>
+    </article>
+  );
+}
+
+function GardenFilters({ lessons, topic, stage, setTopic, setStage }) {
+  const topics = topicList(lessons);
+  return (
+    <div className="garden-filters" aria-label="Filter the learning garden">
+      <div className="garden-filter-group"><span className="filter-label">Topics</span><div className="filter-scroll">
+        <button type="button" className={!topic ? 'is-selected' : ''} onClick={() => setTopic('')}>All topics</button>
+        {topics.map((item) => <button type="button" key={item} className={topic === item ? 'is-selected' : ''} onClick={() => setTopic(item)}>{item}</button>)}
+      </div></div>
+      <label className="garden-select"><span className="filter-label">Growth stage</span><select value={stage} onChange={(event) => setStage(event.target.value)}><option value="">All stages</option>{gardenStages.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label>
+    </div>
+  );
+}
+
 /* ---------- all lessons ---------- */
 function Curriculum({ navigate, progress, resetProgress }) {
+  const [topic, setTopic] = useState('');
+  const [stage, setStage] = useState('');
   const done = progress.completedLessons;
   const percent = Math.round((done.length / availableLessons.length) * 100);
   const next = nextLessonFor(progress);
+  const filteredLessons = useMemo(() => availableLessons.filter((lesson) => (!topic || lessonTopics(lesson).includes(topic)) && (!stage || lessonStage(lesson) === stage)), [topic, stage]);
   return (
     <div className="contents-page">
       <PageHead
         kicker="The course · Contents"
-        title={<>The whole course,<br /><em>in reading order.</em></>}
-        deck="Twenty-two short lessons, gathered into chapters. Read one, run its program, answer the check, then take the next. Finished lessons are marked in the margin."
+        title={<>A garden of<br /><em>working ideas.</em></>}
+        deck="Twenty-two lessons gathered by chapter, topic, and maturity. Follow the reading path, or wander through a related idea and keep your place."
         split
       >
         <div className="contents-folio">
@@ -676,6 +731,7 @@ function Curriculum({ navigate, progress, resetProgress }) {
           <PressMark size={24} />
         </div>
       </PageHead>
+      <div className="garden-intro"><div><span className="folio-label">The learning garden</span><p>Each entry is a real lesson, not a promise of one. Growth stages describe the material itself: what is settled, what is expanding, and what is only beginning.</p></div><div className="garden-legend">{gardenStages.map((item) => <div key={item.id}><GrowthBadge stage={item.id} /><span>{item.description}</span></div>)}</div></div>
       <div className="contents-summary">
         <div className="contents-summary__stat">
           <span>Your place</span>
@@ -688,7 +744,9 @@ function Curriculum({ navigate, progress, resetProgress }) {
         </button>
         {done.length > 0 && <button type="button" className="link-button contents-reset" onClick={resetProgress}>Reset progress</button>}
       </div>
-      <div className="chapter-grid">
+      <GardenFilters lessons={availableLessons} topic={topic} stage={stage} setTopic={setTopic} setStage={setStage} />
+      <div className="garden-result-line"><span>{filteredLessons.length} of {availableLessons.length} lessons in view</span>{(topic || stage) && <button type="button" className="link-button" onClick={() => { setTopic(''); setStage(''); }}>Clear filters</button>}</div>
+      <div className="chapter-grid garden-grid">
         {chapters.map((chapter) => (
           <section className="chapter-block" key={chapter.number}>
             <header className="chapter-head">
@@ -699,20 +757,9 @@ function Curriculum({ navigate, progress, resetProgress }) {
               </div>
             </header>
             <ol className="chapter-lessons">
-              {chapter.lessons.map((lesson) => {
-                const isDone = done.includes(lesson.id);
-                const isNext = lesson.id === next.id;
-                return (
-                  <li key={lesson.id}>
-                    <button type="button" className={`chapter-lesson${isDone ? ' is-done' : ''}${isNext ? ' is-next' : ''}`} onClick={() => navigate(`/learn/${lesson.id}`)}>
-                      <span className="chapter-lesson__mark">{isDone ? <Check size={12} strokeWidth={2.6} aria-hidden="true" /> : isNext ? '→' : '·'}</span>
-                      <span className="chapter-lesson__title">{lesson.title}</span>
-                      <span className="chapter-lesson__meta">{lesson.duration}</span>
-                    </button>
-                  </li>
-                );
-              })}
+              {chapter.lessons.filter((lesson) => filteredLessons.some((item) => item.id === lesson.id)).map((lesson) => <li key={lesson.id}><GardenCard lesson={lesson} progress={progress} navigate={navigate} /></li>)}
             </ol>
+            {!chapter.lessons.some((lesson) => filteredLessons.some((item) => item.id === lesson.id)) && <p className="garden-empty">No entries match this lens.</p>}
           </section>
         ))}
       </div>
@@ -813,6 +860,7 @@ function LessonPage({ lesson, navigate, progress, completeLesson, completeChalle
   const index = availableLessons.findIndex((item) => item.id === lesson.id);
   const previous = availableLessons[index - 1];
   const next = availableLessons[index + 1];
+  const related = relatedLessons(lesson, availableLessons);
   const isComplete = progress.completedLessons.includes(lesson.id);
   const percent = Math.round(((index + (isComplete ? 1 : 0)) / availableLessons.length) * 100);
   useEffect(() => { window.scrollTo(0, 0); }, [lesson.id]);
@@ -947,6 +995,10 @@ function LessonPage({ lesson, navigate, progress, completeLesson, completeChalle
             <p>{progress.completedLessons.length} of {availableLessons.length} lessons finished</p>
             <Meter value={Math.round((progress.completedLessons.length / availableLessons.length) * 100)} />
           </div>
+          <div className="margin-card margin-related">
+            <span className="margin-label">Related in the garden</span>
+            <ul className="related-list">{related.slice(0, 3).map((item) => <li key={item.id}><LessonPreview lesson={item} navigate={navigate}>{item.title}</LessonPreview><span>{lessonTopics(item).filter((topic) => lessonTopics(lesson).includes(topic)).join(' · ')}</span></li>)}</ul>
+          </div>
         </aside>
       </div>
 
@@ -960,6 +1012,11 @@ function LessonPage({ lesson, navigate, progress, completeLesson, completeChalle
           <LessonPractice lesson={lesson} progress={progress} completeChallenge={completeChallenge} />
           <LessonQuiz lesson={lesson} savedScore={progress.quizScores[lesson.id]} saveQuiz={saveQuiz} />
         </div>
+      </section>
+
+      <section className="backlinks" aria-label="Related lessons">
+        <div><span className="eyebrow">Backlinks from the garden</span><h2>Keep following the thread.</h2><p>These lessons share a concept with this one. There is no required order here — only a useful next question.</p></div>
+        <div className="backlinks-list">{related.map((item) => <LessonPreview key={item.id} lesson={item} navigate={navigate}><span>{item.chapterNumber}</span>{item.title}<ArrowRight size={14} aria-hidden="true" /></LessonPreview>)}</div>
       </section>
 
       <div className={`lesson-signoff${isComplete ? ' is-finished' : ''}`}>
