@@ -13,6 +13,7 @@ import { PredictRun, TryIt } from './interactive.jsx';
 import './styles.css';
 
 const STORAGE_KEY = 'learnplainscript.progress.v1';
+const THEME_KEY = 'learnplainscript.theme.v1';
 const defaultProgress = {
   completedLessons: [],
   completedChallenges: [],
@@ -82,6 +83,28 @@ function useProgress() {
   const recordExam = (id, correct) => setProgress((c) => ({ ...c, examAnswers: { ...c.examAnswers, [id]: correct } }));
   const resetProgress = () => setProgress(defaultProgress);
   return { progress, completeLesson, completeChallenge, saveQuiz, saveNote, recordExam, resetProgress };
+}
+
+function initialTheme() {
+  const current = document.documentElement.dataset.theme;
+  if (current === 'dark' || current === 'light') return current;
+  try {
+    const saved = window.localStorage.getItem(THEME_KEY);
+    if (saved === 'dark' || saved === 'light') return saved;
+  } catch { /* private browsing */ }
+  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function useTheme() {
+  const [theme, setTheme] = useState(initialTheme);
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', theme === 'dark' ? '#16130f' : '#f2ebdd');
+    try { window.localStorage.setItem(THEME_KEY, theme); } catch { /* private browsing */ }
+  }, [theme]);
+  const toggleTheme = useCallback(() => setTheme((value) => (value === 'dark' ? 'light' : 'dark')), []);
+  return { theme, toggleTheme };
 }
 
 function nextLessonFor(progress) {
@@ -198,10 +221,11 @@ function Masthead({ path, navigate, progress, onMenu, reading }) {
   );
 }
 
-function Drawer({ open, onClose, navigate, progress }) {
+function Drawer({ open, onClose, navigate, progress, theme, onToggleTheme }) {
   const next = nextLessonFor(progress);
   const done = progress.completedLessons.length;
   const percent = Math.round((done / availableLessons.length) * 100);
+  const isDark = theme === 'dark';
   useEffect(() => {
     if (!open) return undefined;
     const onKey = (event) => { if (event.key === 'Escape') onClose(); };
@@ -215,6 +239,24 @@ function Drawer({ open, onClose, navigate, progress }) {
         <div className="drawer-head">
           <Wordmark navigate={navigate} compact />
           <button type="button" className="icon-button" onClick={onClose} aria-label="Close the menu"><X size={19} aria-hidden="true" /></button>
+        </div>
+        <div className="drawer-theme">
+          <div className="drawer-theme__copy">
+            <span className="drawer-label">Reading mode</span>
+            <span className="drawer-theme__name">{isDark ? 'Night edition' : 'Day edition'}</span>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={isDark}
+            aria-label={isDark ? 'Switch to the day edition' : 'Switch to the night edition'}
+            className={`theme-switch${isDark ? ' is-night' : ''}`}
+            onClick={onToggleTheme}
+          >
+            <span className={isDark ? '' : 'is-on'}>Day</span>
+            <span className="theme-switch__track" aria-hidden="true"><span className="theme-switch__thumb" /></span>
+            <span className={isDark ? 'is-on' : ''}>Night</span>
+          </button>
         </div>
         <p className="drawer-label">Sections</p>
         <nav className="drawer-nav" aria-label="All sections">
@@ -273,7 +315,7 @@ function MobileTabs({ path, navigate }) {
   );
 }
 
-function Shell({ path, navigate, progress, railOpen, setRailOpen, children }) {
+function Shell({ path, navigate, progress, railOpen, setRailOpen, theme, onToggleTheme, children }) {
   const [reading, setReading] = useState(0);
   useEffect(() => {
     const onScroll = () => {
@@ -297,7 +339,7 @@ function Shell({ path, navigate, progress, railOpen, setRailOpen, children }) {
       <main id="main" className="page">{children}</main>
       <Colophon navigate={go} />
       <MobileTabs path={path} navigate={go} />
-      <Drawer open={railOpen} onClose={() => setRailOpen(false)} navigate={go} progress={progress} />
+      <Drawer open={railOpen} onClose={() => setRailOpen(false)} navigate={go} progress={progress} theme={theme} onToggleTheme={onToggleTheme} />
     </div>
   );
 }
@@ -1291,6 +1333,7 @@ function App() {
   const [path, setPath] = useState(routePath);
   const [railOpen, setRailOpen] = useState(false);
   const progressState = useProgress();
+  const { theme, toggleTheme } = useTheme();
   useEffect(() => {
     const onPop = () => setPath(routePath());
     window.addEventListener('popstate', onPop);
@@ -1359,7 +1402,7 @@ function App() {
   useEffect(() => { document.title = title; }, [title]);
   useEffect(() => { if (!window.location.hash) window.scrollTo(0, 0); }, [path]);
   return (
-    <Shell path={path} navigate={navigate} progress={progressState.progress} railOpen={railOpen} setRailOpen={setRailOpen}>
+    <Shell path={path} navigate={navigate} progress={progressState.progress} railOpen={railOpen} setRailOpen={setRailOpen} theme={theme} onToggleTheme={toggleTheme}>
       {view}
     </Shell>
   );

@@ -9,7 +9,7 @@ No account, install, or prior coding experience is needed. Progress is saved in 
 - **One clear path.** 22 lessons in reading order, with the next lesson always marked and one button that continues where you stopped.
 - **Real execution.** Every runnable example calls `POST /api/run`, which compiles and executes the published `plainscript-lang@2.3.1` package in a short-lived child process. Nothing in the browser pretends to interpret PlainScript.
 - **A teaching loop inside each lesson.** A plain-language explanation, a "guess the output" checkpoint checked against the real compiler, an editable specimen, a close-up of the words used, common mistakes, a practice challenge, and one multiple-choice check.
-- **Beginner-friendly navigation.** An editorial masthead and section navigation for the front page, lessons, lecture board, playground, practice test, projects and progress. On phones there is a bottom tab bar and a working slide-out menu.
+- **Beginner-friendly navigation.** An editorial masthead and section navigation for the front page, lessons, lecture board, playground, practice test, projects and progress. The slide-out menu is available at every width, and phones add a bottom tab bar.
 - **Halftone editorial plates** in `public/art/`, including an original letterpress type-case illustration, treated as printed matter rather than decorative 3D objects.
 
 ## Routes
@@ -25,7 +25,7 @@ No account, install, or prior coding experience is needed. Progress is saved in 
 
 ## Design — The Classroom Edition
 
-The interface is built as a twentieth-century editorial publication that happens to teach programming. Warm ivory paper (`#F2EBDD`), near-black ink (`#17130E`) and a muted oxblood accent (`#7A1F2B`) carry the hierarchy; fine rules, asymmetric columns, drop caps, pull quotes and folios do the structural work. Fraunces sets the masthead and display headlines, Newsreader carries the reading text, Space Grotesk is reserved for interface labels, and IBM Plex Mono handles code and folios. Subtle CSS paper grain and halftone plates supply tactility without shadows or glass.
+The interface is built as a twentieth-century editorial publication that happens to teach programming. Warm ivory paper (`#F2EBDD`), near-black ink (`#17130E`) and a muted oxblood accent (`#7A1F2B`) carry the hierarchy; fine rules, asymmetric columns, drop caps, pull quotes and folios do the structural work. Fraunces sets the masthead and display headlines, Newsreader carries the reading text, Space Grotesk is reserved for interface labels, and IBM Plex Mono handles code and folios. Subtle CSS paper grain and halftone plates supply tactility without shadows or glass. A day/night switch in the menu turns the same edition into warm umber paper with chalk-white type and rose accents, remembers the choice, and follows the system preference on a first visit.
 
 Lesson pages are typeset as technical articles with a margin column, then become notebook cells for the interactive parts. Code cells use a Jupyter-like `In [ ]` / `Out [ ]` gutter, warm paper editor surfaces, restrained syntax colour and clear run controls. The old 3D room and decorative motion are gone; only the lecture board's meaningful stroke playback remains, and it respects `prefers-reduced-motion`. The layout reflows deliberately at tablet and phone widths rather than shrinking the broadsheet.
 
