@@ -1,10 +1,18 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Check, Menu, Play, RotateCcw, X, BookOpen, ClipboardList, LayoutDashboard, GraduationCap, Terminal, FolderKanban, TrendingUp } from 'lucide-react';
 import { availableLessons, chapters, flashcards, projects } from './content.js';
 import { homepageSpecimen, playgroundExamples } from './examples.js';
 import { CodeSpecimen, Inline, Tokens } from './highlight.jsx';
+import { Editor } from './editor.jsx';
+import { Output, useRunner } from './runner.jsx';
+import { Whiteboard } from './board.jsx';
+import { PredictRun, TryIt } from './interactive.jsx';
 import './styles.css';
+
+// The classroom scene is a separate chunk: phones and reduced-motion
+// visitors do not pay for Three.js until the room is on screen.
+const ClassroomScene = lazy(() => import('./scene.jsx'));
 
 const STORAGE_KEY = 'learnplainscript.progress.v1';
 const defaultProgress = {
@@ -215,61 +223,6 @@ function Colophon({ navigate }) {
   );
 }
 
-/* ---------- compiler ---------- */
-function useRunner() {
-  const [result, setResult] = useState({ status: 'idle', output: '', error: '', duration: 0 });
-  const run = useCallback(async (source) => {
-    setResult({ status: 'running', output: '', error: '', duration: 0 });
-    try {
-      const response = await fetch('/api/run', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ source }) });
-      const payload = await response.json();
-      if (payload.ok) setResult({ status: 'ok', output: payload.output || '', error: payload.diagnostics || '', duration: payload.durationMs || 0 });
-      else setResult({ status: 'error', output: payload.output || '', error: payload.error || 'The compiler rejected this program.', duration: payload.durationMs || 0 });
-      return payload;
-    } catch {
-      setResult({ status: 'error', output: '', error: 'The compiler service is not reachable. Start the server and try again.', duration: 0 });
-      return null;
-    }
-  }, []);
-  const reset = () => setResult({ status: 'idle', output: '', error: '', duration: 0 });
-  return { result, run, reset };
-}
-function Editor({ code, onChange, label = 'main.pln', minHeight }) {
-  const areaRef = useRef(null);
-  const preRef = useRef(null);
-  const sync = () => { if (!areaRef.current || !preRef.current) return; preRef.current.scrollTop = areaRef.current.scrollTop; preRef.current.scrollLeft = areaRef.current.scrollLeft; };
-  const keyDown = (event) => {
-    if (event.key !== 'Tab') return;
-    event.preventDefault();
-    const area = event.currentTarget;
-    const start = area.selectionStart; const end = area.selectionEnd;
-    onChange(`${code.slice(0, start)}    ${code.slice(end)}`);
-    window.requestAnimationFrame(() => { area.selectionStart = start + 4; area.selectionEnd = start + 4; });
-  };
-  return (
-    <div className="editor" style={minHeight ? { '--editor-h': minHeight } : undefined}>
-      <div className="editor-head"><span className="editor-file">{label}</span><span className="editor-lang">plainscript · 2.3.1</span></div>
-      <div className="editor-body">
-        <pre className="editor-highlight" ref={preRef} aria-hidden="true"><code><Tokens code={`${code}\n`} /></code></pre>
-        <textarea ref={areaRef} value={code} onChange={(e) => onChange(e.target.value)} onScroll={sync} onKeyDown={keyDown} spellCheck="false" autoComplete="off" autoCapitalize="off" aria-label="PlainScript source editor" />
-      </div>
-    </div>
-  );
-}
-function Output({ result, compact = false }) {
-  const running = result.status === 'running';
-  return (
-    <div className={`output is-${result.status}`}>
-      <div className="output-bar"><span>stdout</span><span>{running ? 'compiling…' : result.status === 'ok' ? `exit 0 · ${result.duration}ms` : result.status === 'error' ? 'exit 1' : 'idle'}</span></div>
-      {result.status === 'idle' && <p className="output-empty">Run the program to read its output.</p>}
-      {running && <p className="output-empty">Calling the published 2.3.1 compiler…</p>}
-      {result.status === 'ok' && (<><pre className="output-body">{result.output || 'The program finished without printing anything.'}</pre>{result.error && <pre className="output-diagnostics">{result.error}</pre>}</>)}
-      {result.status === 'error' && <pre className="output-body output-error">{result.error}</pre>}
-      {!compact && result.status !== 'idle' && <div className="output-foot">executed in a short-lived child process · output bounded</div>}
-    </div>
-  );
-}
-
 /* ---------- code tabs ---------- */
 const CODE_TABS = [{ id: 'src', label: 'hello.pln' }, { id: 'out', label: 'hello.js' }, { id: 'cli', label: 'terminal' }];
 function CodeTabs() {
@@ -321,6 +274,27 @@ function Classroom({ navigate, progress }) {
           </button>
         </div>
       </section>
+
+      <Reveal>
+        <section className="scene-section">
+          <div className="scene-copy">
+            <p className="section-kicker">Room 01</p>
+            <h2 className="section-title">Step into the room.</h2>
+            <p>The classroom is a real place in this browser: a chalkboard with today’s concept, a desk with your notebook open, and the compiler within reach. Move your pointer to look around.</p>
+            <div className="scene-actions">
+              <button type="button" className="btn-solid" onClick={() => navigate(`/learn/${nextLesson.id}`)}>Take your seat <span aria-hidden="true">→</span></button>
+              <button type="button" className="btn-line" onClick={() => navigate('/whiteboard')}>Open the board</button>
+            </div>
+            <p className="scene-caption">Rendered with Three.js · paused when off screen · still under reduced motion</p>
+          </div>
+          <div className="scene-frame" role="img" aria-label="A three-dimensional classroom with a chalkboard, desk, notebook and warm window light.">
+            <Suspense fallback={<div className="scene-fallback scene-fallback--loading"><span>Preparing the room…</span></div>}>
+              <ClassroomScene />
+            </Suspense>
+            <div className="scene-badge"><span>3D classroom</span><span>Pointer to look</span></div>
+          </div>
+        </section>
+      </Reveal>
 
       <Reveal>
         <section className="desk-section">
@@ -581,8 +555,15 @@ function LessonPage({ lesson, navigate, progress, completeLesson, completeChalle
       <div className="lesson-body prose">
         <section className="lesson-sec"><h2>What you will learn</h2><ul className="objectives">{lesson.objectives.map((o) => <li key={o}>{o}</li>)}</ul></section>
         <section className="lesson-sec"><h2>The idea</h2><p><Inline text={lesson.explanation} /></p></section>
+        {lesson.expectedOutput && (
+          <section className="lesson-sec lesson-sec--interactive">
+            <h2>Before you run it</h2>
+            <p>Commit to an answer first. The compiler will tell you the truth in a moment.</p>
+            <PredictRun lesson={lesson} />
+          </section>
+        )}
         <section className="lesson-sec"><h2>Syntax, close up</h2><div className="syntax-table">{lesson.syntax.map(([term, description]) => (<div className="syntax-row" key={term}><code className="syntax-term"><Tokens code={term.replace(/`/g, '')} /></code><span><Inline text={description} /></span></div>))}</div></section>
-        <section className="lesson-sec"><h2>The specimen</h2><p>Read it once for the shape, then again for the names.</p><CodeSpecimen code={lesson.example} file={`${lesson.id}.pln`} />{lesson.expectedOutput && (<div className="expected"><span className="expected-label">Expected output</span><pre>{lesson.expectedOutput}</pre></div>)}</section>
+        <section className="lesson-sec"><h2>The specimen</h2><p>Read it once for the shape, then again for the names. It is editable: change a line and run it without leaving the lesson.</p>{lesson.expectedOutput ? (<TryIt lesson={lesson} />) : (<><CodeSpecimen code={lesson.example} file={`${lesson.id}.pln`} /><p className="tryit-static-note">This specimen needs a React project boundary, so it is read rather than executed in the browser runner.</p></>)}</section>
         <section className="lesson-sec lesson-sec--tight"><div className="exercise"><span className="exercise-label">Exercise</span><p><Inline text={lesson.exercise} /></p></div></section>
         <section className="lesson-sec"><h2>Common mistakes</h2><ul className="mistakes">{lesson.commonMistakes.map((m) => <li key={m}><Inline text={m} /></li>)}</ul></section>
         <blockquote className="lesson-quote">The compiler checks the source before it runs. When a line feels unclear, give it a name or a type instead of hiding the decision.<cite>Margin note · PlainScript 2.3.1</cite></blockquote>
@@ -604,141 +585,6 @@ function LessonPage({ lesson, navigate, progress, completeLesson, completeChalle
         <button type="button" className="turn-next" onClick={() => navigate(next ? `/learn/${next.id}` : '/learn')}><span>{next ? 'Turn to' : 'End of the book'}</span><b>{next ? next.title : 'Back to the contents'}</b><i aria-hidden="true">→</i></button>
       </nav>
     </article>
-  );
-}
-
-/* ---------- whiteboard presentation engine ---------- */
-function buildPages(lesson) {
-  return [
-    { kind: 'title', title: lesson.title, chapter: lesson.chapter, num: lesson.chapterNumber },
-    { kind: 'objectives', items: lesson.objectives },
-    { kind: 'concept', text: lesson.explanation },
-    { kind: 'syntax', rows: lesson.syntax },
-    { kind: 'example', code: lesson.example, expected: lesson.expectedOutput },
-    { kind: 'mistakes', items: lesson.commonMistakes },
-    { kind: 'exercise', text: lesson.exercise },
-    { kind: 'question', quiz: lesson.quiz },
-  ];
-}
-function Typewriter({ text, speed = 18 }) {
-  const [shown, setShown] = useState('');
-  const [done, setDone] = useState(false);
-  useEffect(() => {
-    setShown(''); setDone(false);
-    let i = 0;
-    const id = setInterval(() => {
-      i += 1;
-      setShown(text.slice(0, i));
-      if (i >= text.length) { clearInterval(id); setDone(true); }
-    }, speed);
-    return () => clearInterval(id);
-  }, [text, speed]);
-  return <span>{shown}{!done && <span className="caret" />}</span>;
-}
-function Whiteboard({ navigate, progress, saveNote }) {
-  const [lessonId, setLessonId] = useState(progress.lastLesson || availableLessons[0].id);
-  const lesson = availableLessons.find((l) => l.id === lessonId) || availableLessons[0];
-  const pages = buildPages(lesson);
-  const [pageIndex, setPageIndex] = useState(0);
-  const [playing, setPlaying] = useState(false);
-  const [zoom, setZoom] = useState(false);
-  const [note, setNote] = useState(progress.notes?.[lessonId] || '');
-  useEffect(() => { setNote(progress.notes?.[lessonId] || ''); setPageIndex(0); setPlaying(false); }, [lessonId, progress.notes]);
-  useEffect(() => {
-    if (!playing) return undefined;
-    const id = setInterval(() => {
-      setPageIndex((i) => {
-        if (i + 1 >= pages.length) { setPlaying(false); return i; }
-        return i + 1;
-      });
-    }, 4500);
-    return () => clearInterval(id);
-  }, [playing, pages.length]);
-  const page = pages[pageIndex];
-  const go = (i) => setPageIndex(Math.max(0, Math.min(pages.length - 1, i)));
-  return (
-    <div className="whiteboard-page">
-      <div className="running-head"><span>Live classroom · Whiteboard</span><span>{lesson.title}</span></div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '1rem' }}>
-        <h1 className="page-title">The board,<br /><em>in real time.</em></h1>
-        <p style={{ color: 'var(--muted)', maxWidth: '46ch' }}>A self-paced presentation engine. Content appears on the board as it would in a live lesson. Pause, review, zoom, or take notes.</p>
-      </div>
-      <div className="wb-controls">
-        <select className="wb-select" value={lessonId} onChange={(e) => setLessonId(e.target.value)} aria-label="Choose lesson">
-          {availableLessons.map((l) => <option key={l.id} value={l.id}>{l.chapterNumber}. {l.title}</option>)}
-        </select>
-        <button type="button" className="btn-solid small" onClick={() => setPlaying((p) => !p)}>{playing ? 'Pause' : 'Play'}</button>
-        <button type="button" className="btn-line" onClick={() => go(pageIndex - 1)} disabled={pageIndex === 0}>← Prev</button>
-        <button type="button" className="btn-line" onClick={() => go(pageIndex + 1)} disabled={pageIndex === pages.length - 1}>Next →</button>
-        <button type="button" className="icon-btn" onClick={() => setZoom((z) => !z)} aria-label="Zoom">{zoom ? '−' : '+'}</button>
-        <button type="button" className="link-quiet" onClick={() => navigate(`/learn/${lesson.id}`)}>Read the lesson ↗</button>
-      </div>
-      <div className="wb-stage" style={zoom ? { fontSize: '1.25rem' } : undefined}>
-        <div className="wb-page-title" key={`${lessonId}-${pageIndex}`}>
-          {page.kind === 'title' && (<>Chapter {page.num} · {page.chapter}<br />{page.title}</>)}
-          {page.kind === 'objectives' && 'What you will learn'}
-          {page.kind === 'concept' && 'The idea'}
-          {page.kind === 'syntax' && 'Syntax, close up'}
-          {page.kind === 'example' && 'The specimen'}
-          {page.kind === 'mistakes' && 'Common mistakes'}
-          {page.kind === 'exercise' && 'Exercise'}
-          {page.kind === 'question' && 'Knowledge check'}
-        </div>
-        <div key={`${lessonId}-${pageIndex}-body`}>
-          {page.kind === 'title' && (
-            <div>
-              <p className="wb-line-item" style={{ animationDelay: '0.1s' }}>Welcome to lesson {page.num}.</p>
-              <p className="wb-line-item" style={{ animationDelay: '0.4s' }}>Read the board, then try the bench.</p>
-              <div className="wb-diagram">
-                <svg width="220" height="80" viewBox="0 0 220 80">
-                  <rect x="10" y="20" width="80" height="40" rx="6" fill="none" stroke="#D9E7D2" strokeWidth="2" />
-                  <text x="50" y="45" textAnchor="middle" fill="#E8EFE6" fontFamily="IBM Plex Mono" fontSize="11">value</text>
-                  <path d="M100 40 L140 40" stroke="#C96442" strokeWidth="2" />
-                  <polygon points="140,35 150,40 140,45" fill="#C96442" />
-                  <rect x="155" y="20" width="55" height="40" rx="6" fill="none" stroke="#D9E7D2" strokeWidth="2" />
-                  <text x="182" y="45" textAnchor="middle" fill="#E8EFE6" fontFamily="IBM Plex Mono" fontSize="11">value</text>
-                </svg>
-              </div>
-            </div>
-          )}
-          {page.kind === 'objectives' && page.items.map((o, i) => (
-            <p className="wb-line-item wb-bullet" key={o} style={{ animationDelay: `${0.1 + i * 0.25}s` }}>{o}</p>
-          ))}
-          {page.kind === 'concept' && (
-            <p className="wb-line-item" style={{ animationDelay: '0.2s', fontFamily: "'Newsreader', serif", fontSize: '1.15rem', lineHeight: 1.6 }}><Inline text={page.text} /></p>
-          )}
-          {page.kind === 'syntax' && page.rows.map(([term, desc], i) => (
-            <p className="wb-line-item" key={term} style={{ animationDelay: `${0.1 + i * 0.2}s` }}><code>{term.replace(/`/g, '')}</code> — {desc}</p>
-          ))}
-          {page.kind === 'example' && (
-            <div>
-              <div className="wb-code-block"><Typewriter text={page.code} speed={12} /></div>
-              {page.expected && <p className="wb-line-item" style={{ animationDelay: '0.3s' }}>Expected output: <code>{page.expected}</code></p>}
-            </div>
-          )}
-          {page.kind === 'mistakes' && page.items.map((m, i) => (
-            <p className="wb-line-item wb-bullet" key={m} style={{ animationDelay: `${0.1 + i * 0.2}s` }}>{m}</p>
-          ))}
-          {page.kind === 'exercise' && <p className="wb-line-item" style={{ animationDelay: '0.2s' }}>{page.text}</p>}
-          {page.kind === 'question' && (
-            <div>
-              <p className="wb-line-item" style={{ animationDelay: '0.1s', fontFamily: "'Newsreader', serif", fontSize: '1.15rem' }}>{page.quiz.question}</p>
-              {page.quiz.options.map((o, i) => (
-                <p className="wb-line-item" key={o} style={{ animationDelay: `${0.3 + i * 0.15}s` }}><code>{String.fromCharCode(65 + i)}</code> {o}</p>
-              ))}
-              <p className="wb-line-item" style={{ animationDelay: '1.2s', color: 'var(--highlight)' }}>Answer: {String.fromCharCode(65 + page.quiz.answer)}</p>
-            </div>
-          )}
-        </div>
-        <div className="wb-progress">
-          {pages.map((_, i) => <span key={i} className={i === pageIndex ? 'on' : i < pageIndex ? 'done' : ''} />)}
-        </div>
-      </div>
-      <div className="wb-notes">
-        <p style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.72rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.4rem' }}>Your notes</p>
-        <textarea value={note} onChange={(e) => { setNote(e.target.value); saveNote(lessonId, e.target.value); }} placeholder="Write what you notice on the board…" />
-      </div>
-    </div>
   );
 }
 
@@ -962,7 +808,7 @@ function App() {
     const lesson = availableLessons.find((item) => item.id === path.slice('/learn/'.length));
     if (lesson) { view = <LessonPage lesson={lesson} navigate={navigate} progress={progressState.progress} completeLesson={progressState.completeLesson} completeChallenge={progressState.completeChallenge} saveQuiz={progressState.saveQuiz} />; const index = availableLessons.indexOf(lesson); crumb = [`Chapter ${lesson.chapterNumber}`, lesson.title]; pageMeta = `${String(index + 1).padStart(2, '0')} / ${availableLessons.length}`; title = `${lesson.title} · LearnPlainScript`; }
     else { view = <NotFound navigate={navigate} />; crumb = ['LearnPlainScript', '404']; pageMeta = '404'; title = 'Not found · LearnPlainScript'; }
-  } else if (path === '/whiteboard') { view = <Whiteboard navigate={navigate} progress={progressState.progress} saveNote={progressState.saveNote} />; crumb = ['LearnPlainScript', 'Whiteboard']; pageMeta = 'WB'; title = 'Whiteboard · LearnPlainScript'; }
+  } else if (path === '/whiteboard') { view = <Whiteboard navigate={navigate} progress={progressState.progress} saveNote={progressState.saveNote} saveQuiz={progressState.saveQuiz} />; crumb = ['LearnPlainScript', 'Whiteboard']; pageMeta = 'WB'; title = 'Whiteboard · LearnPlainScript'; }
   else if (path === '/playground') { view = <Playground navigate={navigate} />; crumb = ['LearnPlainScript', 'Playground']; pageMeta = 'Lab'; title = 'Playground · LearnPlainScript'; }
   else if (path === '/quiz') { view = <Examination progress={progressState.progress} recordExam={progressState.recordExam} navigate={navigate} />; crumb = ['LearnPlainScript', 'Practice']; pageMeta = '02'; title = 'Practice · LearnPlainScript'; }
   else if (path === '/flashcards') { view = <Flashcards progress={progressState.progress} markReviewed={progressState.markReviewed} setCardIndex={progressState.setCardIndex} navigate={navigate} />; crumb = ['LearnPlainScript', 'Revision']; pageMeta = '03'; title = 'Revision · LearnPlainScript'; }
