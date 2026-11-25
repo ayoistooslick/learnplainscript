@@ -10,7 +10,12 @@ import { Editor } from './editor.jsx';
 import { Output, useRunner } from './runner.jsx';
 import { Whiteboard } from './board.jsx';
 import { PredictRun, TryIt } from './interactive.jsx';
+import {
+  GardenHeader, GardenDrawer, GardenTabs, GardenFooter, GardenHome, GardenIndex,
+  GardenMark, RelatedNotes, StageBadge, bedForLesson, stageForLesson,
+} from './garden.jsx';
 import './styles.css';
+import './garden.css';
 
 const STORAGE_KEY = 'learnplainscript.progress.v1';
 const THEME_KEY = 'learnplainscript.theme.v1';
@@ -100,7 +105,7 @@ function useTheme() {
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute('content', theme === 'dark' ? '#16130f' : '#f2ebdd');
+    if (meta) meta.setAttribute('content', theme === 'dark' ? '#181a15' : '#f7f4ec');
     try { window.localStorage.setItem(THEME_KEY, theme); } catch { /* private browsing */ }
   }, [theme]);
   const toggleTheme = useCallback(() => setTheme((value) => (value === 'dark' ? 'light' : 'dark')), []);
@@ -332,14 +337,15 @@ function Shell({ path, navigate, progress, railOpen, setRailOpen, theme, onToggl
     return () => document.body.classList.remove('nav-open');
   }, [railOpen]);
   const go = useCallback((to) => { setRailOpen(false); navigate(to); }, [navigate, setRailOpen]);
+  const closeRail = useCallback(() => setRailOpen(false), [setRailOpen]);
   return (
-    <div className="app">
+    <div className="app g-app">
       <a className="skip" href="#main">Skip to content</a>
-      <Masthead path={path} navigate={go} progress={progress} onMenu={() => setRailOpen(true)} reading={reading} />
-      <main id="main" className="page">{children}</main>
-      <Colophon navigate={go} />
-      <MobileTabs path={path} navigate={go} />
-      <Drawer open={railOpen} onClose={() => setRailOpen(false)} navigate={go} progress={progress} theme={theme} onToggleTheme={onToggleTheme} />
+      <GardenHeader path={path} navigate={go} progress={progress} onMenu={() => setRailOpen(true)} reading={reading} menuOpen={railOpen} />
+      <main id="main" className="page g-page">{children}</main>
+      <GardenFooter navigate={go} />
+      <GardenTabs path={path} navigate={go} />
+      <GardenDrawer open={railOpen} onClose={closeRail} navigate={go} progress={progress} theme={theme} onToggleTheme={onToggleTheme} />
     </div>
   );
 }
@@ -866,11 +872,13 @@ function LessonPage({ lesson, navigate, progress, completeLesson, completeChalle
     ['words', 'The words, close up'],
     ['mistakes', 'Common mistakes'],
   ];
+  const bed = bedForLesson(lesson);
+  const stage = stageForLesson(lesson);
   return (
     <article className="lesson">
       <div className="lesson-topline">
         <button type="button" className="back-link" onClick={() => navigate('/learn')}>
-          <ArrowLeft size={14} aria-hidden="true" /> All lessons
+          <ArrowLeft size={14} aria-hidden="true" /> The garden
         </button>
         <span className="lesson-topline__count">Lesson {String(index + 1).padStart(2, '0')} of {String(availableLessons.length).padStart(2, '0')}</span>
         <div className="lesson-topline__meter"><Meter value={percent} /></div>
@@ -878,8 +886,18 @@ function LessonPage({ lesson, navigate, progress, completeLesson, completeChalle
 
       <header className="lesson-head">
         <div className="lesson-head__main">
-          <p className="eyebrow">Chapter {lesson.chapterNumber} · {lesson.chapter}</p>
+          <div className="lesson-kicker">
+            <p className="eyebrow">Chapter {lesson.chapterNumber} · {lesson.chapter}</p>
+            <StageBadge stage={stage} />
+          </div>
           <h1 className="lesson-title">{lesson.title}</h1>
+          {bed && (
+            <p className="lesson-bed-path">
+              <button type="button" onClick={() => navigate('/learn')}>The garden</button>
+              <span>/</span>
+              <button type="button" onClick={() => navigate(`/learn?bed=${bed.id}`)}>{bed.title}</button>
+            </p>
+          )}
           <p className="lesson-deck"><Inline text={lesson.intro} /></p>
           <p className="lesson-byline">
             <span>Lesson {String(index + 1).padStart(2, '0')}</span>
@@ -902,6 +920,11 @@ function LessonPage({ lesson, navigate, progress, completeLesson, completeChalle
           </p>
         </aside>
       </header>
+
+      <aside className="g-audience">
+        <span className="g-eyebrow">Assumed audience</span>
+        <p>Someone who can use a browser and is happy to read carefully. No prior PlainScript, and no installation, is required.</p>
+      </aside>
 
       <div className="lesson-grid">
         <div className="lesson-article">
@@ -989,6 +1012,13 @@ function LessonPage({ lesson, navigate, progress, completeLesson, completeChalle
             <p>{progress.completedLessons.length} of {availableLessons.length} lessons finished</p>
             <Meter value={Math.round((progress.completedLessons.length / availableLessons.length) * 100)} />
           </div>
+          {bed && (
+            <div className="margin-card">
+              <span className="margin-label">Tended in</span>
+              <p className="margin-bed">{bed.title}</p>
+              <button type="button" className="link-button" onClick={() => navigate(`/learn?bed=${bed.id}`)}>See the whole bed →</button>
+            </div>
+          )}
         </aside>
       </div>
 
@@ -1003,6 +1033,8 @@ function LessonPage({ lesson, navigate, progress, completeLesson, completeChalle
           <LessonQuiz lesson={lesson} savedScore={progress.quizScores[lesson.id]} saveQuiz={saveQuiz} />
         </div>
       </section>
+
+      <RelatedNotes lesson={lesson} navigate={navigate} />
 
       <div className={`lesson-signoff${isComplete ? ' is-finished' : ''}`}>
         <PressMark size={22} />
@@ -1067,6 +1099,18 @@ function Playground({ navigate }) {
           <p className="workshop-index__note">Every specimen is executed against the compiler when the course is checked.</p>
         </aside>
         <div className="workshop-main">
+          <label className="workshop-picker">
+            <span>Choose a specimen</span>
+            <select
+              value={exampleId}
+              onChange={(event) => {
+                const item = playgroundExamples.find((entry) => entry.id === event.target.value);
+                if (item) choose(item);
+              }}
+            >
+              {playgroundExamples.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
+            </select>
+          </label>
           <div className="workshop-specimen-head">
             <span className="story-tag">Now editing</span>
             <h2>{example.label}</h2>
@@ -1314,13 +1358,13 @@ function Progress({ progress, navigate, resetProgress }) {
 function NotFound({ navigate }) {
   return (
     <div className="not-found">
-      <PressMark size={34} />
-      <p className="eyebrow">Page not found</p>
-      <h1 className="page-title">This page went<br /><em>to press without us.</em></h1>
-      <p className="page-deck">The link may be old. The contents page is the reliable place to start.</p>
+      <GardenMark size={38} />
+      <p className="eyebrow">Off the path</p>
+      <h1 className="page-title">This path has<br /><em>gone to seed.</em></h1>
+      <p className="page-deck">The link may be old. The garden is the reliable place to start again.</p>
       <div className="not-found__actions">
-        <button type="button" className="button button--ink" onClick={() => navigate('/learn')}>See all lessons</button>
-        <button type="button" className="button button--line" onClick={() => navigate('/')}>Go to the front page</button>
+        <button type="button" className="button button--ink" onClick={() => navigate('/learn')}>Wander the garden</button>
+        <button type="button" className="button button--line" onClick={() => navigate('/')}>The front page</button>
       </div>
     </div>
   );
@@ -1331,29 +1375,39 @@ function routePath() { return window.location.pathname.replace(/\/+$/, '') || '/
 
 function App() {
   const [path, setPath] = useState(routePath);
+  const [search, setSearch] = useState(() => window.location.search);
   const [railOpen, setRailOpen] = useState(false);
   const progressState = useProgress();
   const { theme, toggleTheme } = useTheme();
   useEffect(() => {
-    const onPop = () => setPath(routePath());
+    const onPop = () => { setPath(routePath()); setSearch(window.location.search); };
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
   }, []);
   const navigate = useCallback((to) => {
-    if (to === path) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+    const current = `${path}${window.location.search}`;
+    if (to === current) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
     window.history.pushState({}, '', to);
-    setPath(to);
+    setPath(routePath());
+    setSearch(window.location.search);
     window.scrollTo(0, 0);
   }, [path]);
 
   let view;
-  let title = 'LearnPlainScript · A classroom journal for PlainScript 2.3.1';
+  let title = 'LearnPlainScript · A garden for readable code';
 
   if (path === '/') {
-    view = <Classroom navigate={navigate} progress={progressState.progress} />;
+    view = <GardenHome navigate={navigate} progress={progressState.progress} />;
   } else if (path === '/learn') {
-    view = <Curriculum navigate={navigate} progress={progressState.progress} resetProgress={progressState.resetProgress} />;
-    title = 'The contents · LearnPlainScript';
+    view = (
+      <GardenIndex
+        navigate={navigate}
+        progress={progressState.progress}
+        resetProgress={progressState.resetProgress}
+        initialBed={new URLSearchParams(search).get('bed') || 'all'}
+      />
+    );
+    title = 'The Garden · LearnPlainScript';
   } else if (path.startsWith('/learn/')) {
     const lesson = availableLessons.find((item) => item.id === path.slice('/learn/'.length));
     if (lesson) {
@@ -1367,7 +1421,7 @@ function App() {
           saveQuiz={progressState.saveQuiz}
         />
       );
-      title = `${lesson.title} · LearnPlainScript`;
+        title = `${lesson.title} · LearnPlainScript`;
     } else {
       view = <NotFound navigate={navigate} />;
       title = 'Page not found · LearnPlainScript';
@@ -1384,16 +1438,16 @@ function App() {
     title = 'The lecture board · LearnPlainScript';
   } else if (path === '/playground') {
     view = <Playground navigate={navigate} />;
-    title = 'The workshop · LearnPlainScript';
+    title = 'The potting shed · LearnPlainScript';
   } else if (path === '/quiz') {
     view = <Examination progress={progressState.progress} recordExam={progressState.recordExam} navigate={navigate} />;
-    title = 'The practice test · LearnPlainScript';
+    title = 'Practice · LearnPlainScript';
   } else if (path === '/projects') {
     view = <Projects navigate={navigate} />;
-    title = 'Mini projects · LearnPlainScript';
+    title = 'Projects · LearnPlainScript';
   } else if (path === '/progress') {
     view = <Progress progress={progressState.progress} navigate={navigate} resetProgress={progressState.resetProgress} />;
-    title = 'My progress · LearnPlainScript';
+    title = 'Your progress · LearnPlainScript';
   } else {
     view = <NotFound navigate={navigate} />;
     title = 'Page not found · LearnPlainScript';
