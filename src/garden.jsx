@@ -4,7 +4,8 @@ import {
 } from 'lucide-react';
 import { availableLessons, plainWords } from './content.js';
 import { lessonTopics, relatedLessons as topicalRelatedLessons } from './garden.js';
-import { LANGUAGES, LANGUAGE_KEY, savedLanguage } from './languages.js';
+import { LANGUAGES } from './languages.js';
+import { hasTranslation, useT } from './i18n.js';
 import { homepageSpecimen } from './examples.js';
 import { Tokens } from './highlight.jsx';
 import { Editor } from './editor.jsx';
@@ -185,11 +186,12 @@ export function GrowthGlyph({ stage = 'evergreen', size = 22 }) {
 }
 
 export function StageBadge({ stage, className = '' }) {
+  const t = useT();
   const meta = STAGES[stage] || STAGES.evergreen;
   return (
-    <span className={`g-stage g-stage--${stage} ${className}`} title={meta.description}>
+    <span className={`g-stage g-stage--${stage} ${className}`} title={t(meta.description)}>
       <GrowthGlyph stage={stage} size={14} />
-      <span>{meta.label}</span>
+      <span>{t(meta.label)}</span>
     </span>
   );
 }
@@ -272,6 +274,7 @@ export function GardenPlot() {
 --------------------------------------------------------------------------- */
 
 export function GardenHeader({ path, navigate, progress, onMenu, reading, menuOpen = false }) {
+  const t = useT();
   const next = nextLesson(progress);
   return (
     <header className="g-header">
@@ -286,18 +289,18 @@ export function GardenHeader({ path, navigate, progress, onMenu, reading, menuOp
               onClick={() => navigate(item.to)}
               aria-current={activePath(path, item.to) ? 'page' : undefined}
             >
-              {item.label}
+              {t(item.label)}
             </button>
           ))}
         </nav>
         <div className="g-header__actions">
           <button type="button" className="g-header__continue" onClick={() => navigate(`/learn/${next.id}`)}>
-            <span>{progress.completedLessons.length ? 'Continue' : 'Start here'}</span>
+            <span>{t(progress.completedLessons.length ? 'Continue' : 'Start here')}</span>
             <ArrowRight size={15} strokeWidth={1.6} aria-hidden="true" />
           </button>
           <button type="button" className="g-menu-toggle" onClick={onMenu} aria-label="Open the garden menu and appearance settings" aria-expanded={menuOpen} aria-controls="garden-menu">
             <Menu size={20} strokeWidth={1.5} aria-hidden="true" />
-            <span>Menu</span>
+            <span>{t('Menu')}</span>
           </button>
         </div>
       </div>
@@ -306,7 +309,8 @@ export function GardenHeader({ path, navigate, progress, onMenu, reading, menuOp
   );
 }
 
-export function GardenDrawer({ open, onClose, navigate, progress, theme, onToggleTheme }) {
+export function GardenDrawer({ open, onClose, navigate, progress, theme, onToggleTheme, language, onLanguage }) {
+  const t = useT();
   const next = nextLesson(progress);
   const done = progress.completedLessons.length;
   const percent = Math.round((done / availableLessons.length) * 100);
@@ -314,19 +318,9 @@ export function GardenDrawer({ open, onClose, navigate, progress, theme, onToggl
   const panelRef = useRef(null);
   const returnFocus = useRef(null);
 
-  const [language, setLanguage] = useState(savedLanguage);
   const [langOpen, setLangOpen] = useState(false);
   const [langQuery, setLangQuery] = useState('');
   const searchRef = useRef(null);
-
-  useEffect(() => {
-    document.documentElement.lang = language.code;
-    try {
-      window.localStorage.setItem(LANGUAGE_KEY, language.code);
-    } catch {
-      // A reading preference is optional; private browsing can refuse storage.
-    }
-  }, [language]);
 
   // A closed drawer should reopen at its top, not halfway through the language list.
   useEffect(() => {
@@ -405,8 +399,8 @@ export function GardenDrawer({ open, onClose, navigate, progress, theme, onToggl
 
         <div className="g-drawer__theme">
           <div>
-            <span className="g-eyebrow">Reading light</span>
-            <span className="g-drawer__theme-name">{isDark ? 'Night garden' : 'Day garden'}</span>
+            <span className="g-eyebrow">{t('Reading light')}</span>
+            <span className="g-drawer__theme-name">{t(isDark ? 'Night garden' : 'Day garden')}</span>
           </div>
           <div className="g-drawer__controls">
             <button
@@ -415,8 +409,8 @@ export function GardenDrawer({ open, onClose, navigate, progress, theme, onToggl
               onClick={() => setLangOpen((value) => !value)}
               aria-expanded={langOpen}
               aria-controls={langOpen ? 'garden-language' : undefined}
-              aria-label={`Document language: ${language.name}. Change language`}
-              title={`Language · ${language.name}`}
+              aria-label={`${t('Document language')}: ${language.name}`}
+              title={`${t('Document language')} · ${language.name}`}
             >
               <Languages size={18} strokeWidth={1.6} aria-hidden="true" />
             </button>
@@ -428,9 +422,9 @@ export function GardenDrawer({ open, onClose, navigate, progress, theme, onToggl
               className={`g-switch${isDark ? ' is-night' : ''}`}
               onClick={onToggleTheme}
             >
-              <span className={isDark ? '' : 'is-on'}>Day</span>
+              <span className={isDark ? '' : 'is-on'}>{t('Day')}</span>
               <span className="g-switch__track" aria-hidden="true"><span className="g-switch__thumb" /></span>
-              <span className={isDark ? 'is-on' : ''}>Night</span>
+              <span className={isDark ? 'is-on' : ''}>{t('Night')}</span>
             </button>
           </div>
         </div>
@@ -447,10 +441,14 @@ export function GardenDrawer({ open, onClose, navigate, progress, theme, onToggl
             }}
           >
             <div className="g-lang__head">
-              <label className="g-eyebrow" htmlFor="g-lang-search">Document language</label>
+              <label className="g-eyebrow" htmlFor="g-lang-search">{t('Document language')}</label>
               <span className="g-lang__current" lang={language.code} dir={language.rtl ? 'rtl' : undefined}>{language.native}</span>
             </div>
-            <p className="g-lang__note">The notes are written in English. This sets the page language for hyphenation, spell-checking, screen readers and your browser's translator.</p>
+            <p className="g-lang__note">
+              {hasTranslation(language.code)
+                ? 'The interface is translated. Lesson notes stay in English so every example remains exact.'
+                : 'The interface for this language is still being translated, so the text stays in English for now. The page language is still set for hyphenation, spell-checking, screen readers and your browser’s translator.'}
+            </p>
             <input
               id="g-lang-search"
               className="g-lang__search"
@@ -458,7 +456,7 @@ export function GardenDrawer({ open, onClose, navigate, progress, theme, onToggl
               type="search"
               value={langQuery}
               onChange={(event) => setLangQuery(event.target.value)}
-              placeholder={`Search ${LANGUAGES.length} languages`}
+              placeholder={t('Search {count} languages', { count: LANGUAGES.length })}
               autoComplete="off"
             />
             <ul className="g-lang__list">
@@ -469,13 +467,13 @@ export function GardenDrawer({ open, onClose, navigate, progress, theme, onToggl
                     className={item.code === language.code ? 'is-active' : ''}
                     aria-pressed={item.code === language.code}
                     onClick={() => {
-                      setLanguage(item);
+                      onLanguage(item);
                       setLangOpen(false);
                       setLangQuery('');
                     }}
                   >
                     <span lang={item.code} dir={item.rtl ? 'rtl' : undefined}>{item.native}</span>
-                    <em>{item.name}</em>
+                    <em>{item.name}{hasTranslation(item.code) ? ' · ✓' : ''}</em>
                   </button>
                 </li>
               ))}
@@ -484,7 +482,7 @@ export function GardenDrawer({ open, onClose, navigate, progress, theme, onToggl
           </div>
         )}
 
-        <p className="g-eyebrow g-drawer__label">Wander</p>
+        <p className="g-eyebrow g-drawer__label">{t('Wander')}</p>
         <nav className="g-drawer__nav" aria-label="All sections">
           {NAV.map((item, index) => (
             <button
@@ -493,20 +491,20 @@ export function GardenDrawer({ open, onClose, navigate, progress, theme, onToggl
               className={activePath(window.location.pathname, item.to) ? 'is-active' : ''}
               onClick={() => navigate(item.to)}
             >
-              <span>{String(index + 1).padStart(2, '0')}</span>{item.label}
+              <span>{String(index + 1).padStart(2, '0')}</span>{t(item.label)}
             </button>
           ))}
-          <button type="button" onClick={() => navigate('/')}><span>00</span>Front page</button>
+          <button type="button" onClick={() => navigate('/')}><span>00</span>{t('Front page')}</button>
         </nav>
 
         <div className="g-drawer__place">
           <div className="g-drawer__place-head">
-            <span className="g-eyebrow">Your place</span>
+            <span className="g-eyebrow">{t('Your place')}</span>
             <span>{percent}%</span>
           </div>
           <Meter value={percent} />
-          <p>{done} of {availableLessons.length} notes read</p>
-          <span className="g-drawer__next-label">{done ? 'Pick up at' : 'Begin with'}</span>
+          <p>{t('{done} of {total} notes read', { done, total: availableLessons.length })}</p>
+          <span className="g-drawer__next-label">{t(done ? 'Pick up at' : 'Begin with')}</span>
           <button type="button" className="g-drawer__next" onClick={() => navigate(`/learn/${next.id}`)}>
             <b>{next.title}</b>
             <ArrowRight size={16} strokeWidth={1.5} aria-hidden="true" />
@@ -514,8 +512,8 @@ export function GardenDrawer({ open, onClose, navigate, progress, theme, onToggl
         </div>
 
         <div className="g-drawer__foot">
-          <p>Progress is kept in this browser. No account, no trackers.</p>
-          <a href="https://ayoistooslick.github.io/plainscript" target="_blank" rel="noreferrer">Official PlainScript documentation <ArrowUpRight size={11} aria-hidden="true" /></a>
+          <p>{t('Progress is kept in this browser. No account, no trackers.')}</p>
+          <a href="https://ayoistooslick.github.io/plainscript" target="_blank" rel="noreferrer">{t('Official PlainScript documentation')} <ArrowUpRight size={11} aria-hidden="true" /></a>
         </div>
       </div>
     </div>
@@ -523,6 +521,7 @@ export function GardenDrawer({ open, onClose, navigate, progress, theme, onToggl
 }
 
 export function GardenTabs({ path, navigate }) {
+  const t = useT();
   const tabs = [
     { to: '/', label: 'Home', no: '00' },
     { to: '/learn', label: 'Garden', no: '01' },
@@ -535,7 +534,7 @@ export function GardenTabs({ path, navigate }) {
         const active = tab.to === '/' ? path === '/' : activePath(path, tab.to);
         return (
           <button key={tab.to} type="button" className={active ? 'is-active' : ''} onClick={() => navigate(tab.to)} aria-current={active ? 'page' : undefined}>
-            <span>{tab.no}</span>{tab.label}
+            <span>{tab.no}</span>{t(tab.label)}
           </button>
         );
       })}
@@ -544,38 +543,39 @@ export function GardenTabs({ path, navigate }) {
 }
 
 export function GardenFooter({ navigate }) {
+  const t = useT();
   return (
     <footer className="g-footer">
       <div className="g-footer__lead">
         <GardenMark size={34} />
-        <p>An independent field guide to PlainScript 2.3.1. Read a note, run its program, then follow what interests you.</p>
-        <span>{availableLessons.length} notes · {BEDS.length} beds · no account</span>
+        <p>{t('An independent field guide to PlainScript 2.3.1. Read a note, run its program, then follow what interests you.')}</p>
+        <span>{t('{count} notes · {beds} beds · no account', { count: availableLessons.length, beds: BEDS.length })}</span>
       </div>
       <div className="g-footer__grid">
         <div>
           <p className="g-eyebrow">Wander</p>
           <nav className="g-footer__nav" aria-label="Footer navigation">
-            {NAV.map((item) => <button key={item.to} type="button" onClick={() => navigate(item.to)}>{item.label}</button>)}
+            {NAV.map((item) => <button key={item.to} type="button" onClick={() => navigate(item.to)}>{t(item.label)}</button>)}
           </nav>
         </div>
         <div>
-          <p className="g-eyebrow">How it grows</p>
+          <p className="g-eyebrow">{t('How it grows')}</p>
           <ul className="g-footer__stages">
             {Object.entries(STAGES).map(([id, stage]) => (
-              <li key={id}><StageBadge stage={id} /><span>{stage.description}</span></li>
+              <li key={id}><StageBadge stage={id} /><span>{t(stage.description)}</span></li>
             ))}
           </ul>
         </div>
         <div>
-          <p className="g-eyebrow">Colophon</p>
+          <p className="g-eyebrow">{t('Colophon')}</p>
           <p className="g-footer__copy">Set in Newsreader, Lato and IBM Plex Mono. Every runnable specimen is checked and executed with <code>plainscript-lang@2.3.1</code>.</p>
-          <a href="https://ayoistooslick.github.io/plainscript" target="_blank" rel="noreferrer">The language documentation <ArrowUpRight size={11} aria-hidden="true" /></a>
+          <a href="https://ayoistooslick.github.io/plainscript" target="_blank" rel="noreferrer">{t('The language documentation')} <ArrowUpRight size={11} aria-hidden="true" /></a>
         </div>
       </div>
       <div className="g-footer__bottom">
-        <span>LearnPlainScript · a garden for readable code</span>
-        <span>Written for people starting from zero.</span>
-        <span>Independent companion · not affiliated with the language author.</span>
+        <span>{t('LearnPlainScript · a garden for readable code')}</span>
+        <span>{t('Written for people starting from zero.')}</span>
+        <span>{t('Independent companion · not affiliated with the language author.')}</span>
       </div>
     </footer>
   );
@@ -630,6 +630,7 @@ function GardenFieldNote({ navigate }) {
 }
 
 function GardenHere({ progress, navigate }) {
+  const t = useT();
   const done = progress.completedLessons.length;
   const percent = Math.round((done / availableLessons.length) * 100);
   const next = nextLesson(progress);
@@ -637,23 +638,24 @@ function GardenHere({ progress, navigate }) {
   return (
     <section className="g-here" aria-label="Your place in the garden">
       <div className="g-here__label">
-        <span className="g-eyebrow">Your place</span>
-        <b>{done ? 'Continue where you stopped' : 'The gate is open'}</b>
+        <span className="g-eyebrow">{t('Your place')}</span>
+        <b>{t(done ? 'Continue where you stopped' : 'The gate is open')}</b>
       </div>
       <Meter value={percent} className="g-here__meter" />
-      <div className="g-here__count"><b>{done}</b> / {availableLessons.length} notes read</div>
+      <div className="g-here__count"><b>{done}</b> / {availableLessons.length} {t('notes read')}</div>
       <div className="g-here__next">
         <span>{bed ? bed.title : 'The garden'}</span>
         <b>{next.title}</b>
       </div>
       <button type="button" className="g-button g-button--small g-button--accent" onClick={() => navigate(`/learn/${next.id}`)}>
-        {done ? 'Open the next note' : 'Begin here'} <ArrowRight size={13} aria-hidden="true" />
+        {t(done ? 'Open the next note' : 'Begin here')} <ArrowRight size={13} aria-hidden="true" />
       </button>
     </section>
   );
 }
 
 function BedCard({ bed, progress, navigate, index }) {
+  const t = useT();
   const lessons = lessonsForBed(bed);
   const done = lessons.filter((lesson) => progress.completedLessons.includes(lesson.id)).length;
   const percent = Math.round((done / lessons.length) * 100);
@@ -668,9 +670,9 @@ function BedCard({ bed, progress, navigate, index }) {
         <StageBadge stage={bed.stage} />
       </span>
       <span className="g-bed-card__glyph"><GrowthGlyph stage={bed.stage} size={49} /></span>
-      <span className="g-bed-card__title">{bed.title}</span>
-      <span className="g-bed-card__blurb">{bed.blurb}</span>
-      <span className="g-bed-card__meta">{lessons.length} notes · {done} read</span>
+      <span className="g-bed-card__title">{t(bed.title)}</span>
+      <span className="g-bed-card__blurb">{t(bed.blurb)}</span>
+      <span className="g-bed-card__meta">{lessons.length} {t('notes')} · {done} {t('read')}</span>
       <Meter value={percent} />
       <span className="g-bed-card__foot">
         <span>{lessons.slice(0, 2).map((lesson) => lesson.title).join(' · ')}</span>
@@ -681,6 +683,7 @@ function BedCard({ bed, progress, navigate, index }) {
 }
 
 function GardenNoteCard({ lesson, navigate, feature = false }) {
+  const t = useT();
   const bed = bedForLesson(lesson);
   const stage = stageForLesson(lesson);
   return (
@@ -695,16 +698,17 @@ function GardenNoteCard({ lesson, navigate, feature = false }) {
       </span>
       <span className="g-note-card__top">
         <StageBadge stage={stage} />
-        <span>{bed?.short} · {lesson.duration}</span>
+        <span>{t(bed?.short)} · {lesson.duration}</span>
       </span>
       <span className="g-note-card__title">{lesson.title}</span>
       <span className="g-note-card__deck">{plainWords[lesson.id] || lesson.intro}</span>
-      <span className="g-note-card__read">Read the note <ArrowRight size={14} aria-hidden="true" /></span>
+      <span className="g-note-card__read">{t('Read the note')} <ArrowRight size={14} aria-hidden="true" /></span>
     </button>
   );
 }
 
 function GardenMapIntro({ navigate }) {
+  const t = useT();
   return (
     <section className="g-map-intro" aria-labelledby="g-map-title">
       <div className="g-map-intro__copy">
@@ -727,13 +731,14 @@ function GardenMapIntro({ navigate }) {
 }
 
 function GardenShed({ navigate }) {
+  const t = useT();
   return (
     <section className="g-shed" aria-labelledby="g-shed-title">
       <div className="g-shed__copy">
-        <p className="g-eyebrow">The potting shed</p>
-        <h2 id="g-shed-title">Try a sentence<br /><em>before you trust it.</em></h2>
+        <p className="g-eyebrow">{t('The potting shed')}</p>
+        <h2 id="g-shed-title">{t('Try a sentence')}<br /><em>{t('before you trust it.')}</em></h2>
         <p>This is the same compiler the lessons use. Change the greeting, press Run, and read the answer for yourself. Nothing is saved, so nothing can break.</p>
-        <button type="button" className="g-text-link" onClick={() => navigate('/playground')}>Open the full playground <ArrowRight size={14} aria-hidden="true" /></button>
+        <button type="button" className="g-text-link" onClick={() => navigate('/playground')}>{t('Open the full playground')} <ArrowRight size={14} aria-hidden="true" /></button>
       </div>
       <div className="g-shed__bench">
         <GardenBench />
@@ -744,6 +749,7 @@ function GardenShed({ navigate }) {
 }
 
 export function GardenHome({ progress, navigate }) {
+  const t = useT();
   const next = nextLesson(progress);
   const done = progress.completedLessons.length;
   const started = done > 0;
@@ -755,18 +761,18 @@ export function GardenHome({ progress, navigate }) {
     <div className="g-home">
       <section className="g-hero">
         <div className="g-hero__copy">
-          <p className="g-kicker"><GardenMark size={15} /> An independent field guide to PlainScript 2.3.1</p>
-          <h1>A garden for learning to <em>write plainly.</em></h1>
-          <p className="g-hero__deck">PlainScript is a small, statically typed language that reads close to English. This is a place to learn it slowly: twenty-two notes, real programs, and a compiler that always answers honestly.</p>
+          <p className="g-kicker"><GardenMark size={15} /> {t('An independent field guide to PlainScript 2.3.1')}</p>
+          <h1>{t('A garden for learning to ')}<em>{t('write plainly.')}</em></h1>
+          <p className="g-hero__deck">{t('PlainScript is a small, statically typed language that reads close to English. This is a place to learn it slowly: twenty-two notes, real programs, and a compiler that always answers honestly.')}</p>
           <div className="g-hero__actions">
             <button type="button" className="g-button g-button--primary" onClick={() => navigate(`/learn/${next.id}`)}>
-              {started ? 'Continue learning' : 'Begin at lesson 01'} <ArrowRight size={16} aria-hidden="true" />
+              {t(started ? 'Continue learning' : 'Begin at lesson 01')} <ArrowRight size={16} aria-hidden="true" />
             </button>
             <a className="g-text-link" href="#garden" onClick={(event) => { event.preventDefault(); document.getElementById('garden')?.scrollIntoView({ behavior: 'smooth' }); }}>
-              Wander the garden <ArrowDown size={14} aria-hidden="true" />
+              {t('Wander the garden')} <ArrowDown size={14} aria-hidden="true" />
             </a>
           </div>
-          <p className="g-hero__meta">{availableLessons.length} notes · {BEDS.length} beds · no account · real compiler</p>
+          <p className="g-hero__meta">{t('{count} notes · {beds} beds · no account · real compiler', { count: availableLessons.length, beds: BEDS.length })}</p>
         </div>
         <GardenFieldNote navigate={navigate} />
       </section>
@@ -776,19 +782,19 @@ export function GardenHome({ progress, navigate }) {
       <section className="g-garden" id="garden" aria-labelledby="g-garden-title">
         <header className="g-section-head">
           <div>
-            <p className="g-eyebrow">The garden</p>
-            <h2 id="g-garden-title">Six beds,<br /><em>one growing course.</em></h2>
+            <p className="g-eyebrow">{t('The garden')}</p>
+            <h2 id="g-garden-title">{t('Six beds,')}<br /><em>{t('one growing course.')}</em></h2>
           </div>
           <div className="g-section-head__aside">
             <p>Every note is a short, complete read. The beds group related ideas so you can follow the path or go straight to what you need.</p>
-            <button type="button" className="g-text-link" onClick={() => navigate('/learn')}>See all {availableLessons.length} notes <ArrowRight size={14} aria-hidden="true" /></button>
+            <button type="button" className="g-text-link" onClick={() => navigate('/learn')}>{t('See all {count} notes', { count: availableLessons.length })} <ArrowRight size={14} aria-hidden="true" /></button>
           </div>
         </header>
         <div className="g-bed-grid">
           {BEDS.map((bed, index) => <BedCard key={bed.id} bed={bed} index={index} progress={progress} navigate={navigate} />)}
         </div>
         <div className="g-legend">
-          <span className="g-eyebrow">Growth stages</span>
+          <span className="g-eyebrow">{t('Growth stages')}</span>
           {Object.entries(STAGES).map(([id, stage]) => (
             <span key={id} className={`g-legend__item g-stage--${id}`}><GrowthGlyph stage={id} size={16} /> <b>{stage.label}</b> {stage.description}</span>
           ))}
@@ -800,8 +806,8 @@ export function GardenHome({ progress, navigate }) {
       <section className="g-notes" aria-labelledby="g-notes-title">
         <header className="g-section-head">
           <div>
-            <p className="g-eyebrow">Freshly tended</p>
-            <h2 id="g-notes-title">Notes worth<br /><em>opening today.</em></h2>
+            <p className="g-eyebrow">{t('Freshly tended')}</p>
+            <h2 id="g-notes-title">{t('Notes worth')}<br /><em>{t('opening today.')}</em></h2>
           </div>
           <div className="g-section-head__aside">
             <p>Start with the shape of data, then grow towards objects and a real toolchain.</p>
@@ -823,11 +829,11 @@ export function GardenHome({ progress, navigate }) {
       <GardenShed navigate={navigate} />
 
       <section className="g-closing">
-        <p className="g-eyebrow">There is no rush here</p>
-        <h2>Start with one sentence.</h2>
+        <p className="g-eyebrow">{t('There is no rush here')}</p>
+        <h2>{t('Start with one sentence.')}</h2>
         <p>The first note takes eight minutes. You will leave with a program that runs.</p>
         <button type="button" className="g-button g-button--primary" onClick={() => navigate('/learn/why-plainscript')}>
-          Open the first note <ArrowRight size={16} aria-hidden="true" />
+          {t('Open the first note')} <ArrowRight size={16} aria-hidden="true" />
         </button>
       </section>
     </div>
@@ -839,6 +845,7 @@ export function GardenHome({ progress, navigate }) {
 --------------------------------------------------------------------------- */
 
 function IndexNote({ lesson, progress, navigate }) {
+  const t = useT();
   const done = progress.completedLessons.includes(lesson.id);
   const stage = stageForLesson(lesson);
   return (
@@ -849,7 +856,7 @@ function IndexNote({ lesson, progress, navigate }) {
           <span className="g-index-note__top"><StageBadge stage={stage} /><span>Chapter {lesson.chapterNumber} · {lesson.duration}</span></span>
           <span className="g-index-note__title">{lesson.title}</span>
           <span className="g-index-note__deck">{lesson.intro}</span>
-          <span className={`g-index-note__state${done ? ' is-done' : ''}`}>{done ? 'Read' : 'Not yet read'} <i>·</i> {done ? 'return to this note' : 'open the note'}</span>
+          <span className={`g-index-note__state${done ? ' is-done' : ''}`}>{t(done ? 'Read' : 'Not yet read')} <i>·</i> {done ? 'return to this note' : 'open the note'}</span>
         </span>
         <ArrowUpRight className="g-index-note__arrow" size={18} strokeWidth={1.4} aria-hidden="true" />
         <span className="g-index-note__peek" aria-hidden="true">
@@ -863,6 +870,7 @@ function IndexNote({ lesson, progress, navigate }) {
 }
 
 export function GardenIndex({ progress, navigate, initialBed = 'all', resetProgress }) {
+  const t = useT();
   const [bedFilter, setBedFilter] = useState(BEDS.some((bed) => bed.id === initialBed) ? initialBed : 'all');
   const [stageFilter, setStageFilter] = useState('all');
   const done = progress.completedLessons.length;
@@ -880,40 +888,40 @@ export function GardenIndex({ progress, navigate, initialBed = 'all', resetProgr
     <div className="g-index">
       <header className="g-index-head">
         <p className="g-eyebrow">Index of notes · {availableLessons.length}</p>
-        <h1>The Garden</h1>
+        <h1>{t('The Garden')}</h1>
         <p className="g-index-head__deck">A collection of short PlainScript lessons, grouped into beds and always open. Read in order, or follow the question you have today.</p>
         <div className="g-index-head__meta">
           <div className="g-index-head__place">
-            <span className="g-eyebrow">Your place</span>
-            <b>{done} of {availableLessons.length} notes read</b>
+            <span className="g-eyebrow">{t('Your place')}</span>
+            <b>{t('{done} of {total} notes read', { done, total: availableLessons.length })}</b>
           </div>
           <Meter value={percent} />
           <span>{percent}%</span>
-          {done > 0 && resetProgress && <button type="button" className="g-text-link" onClick={resetProgress}>Reset progress</button>}
+          {done > 0 && resetProgress && <button type="button" className="g-text-link" onClick={resetProgress}>{t('Reset progress')}</button>}
         </div>
       </header>
 
       <div className="g-filters" aria-label="Filter the garden">
         <div className="g-filter-row">
-          <span className="g-eyebrow">Beds</span>
+          <span className="g-eyebrow">{t('Beds')}</span>
           <div className="g-filter-chips">
-            <button type="button" className={bedFilter === 'all' ? 'is-on' : ''} aria-pressed={bedFilter === 'all'} onClick={() => setBedFilter('all')}>All</button>
+            <button type="button" className={bedFilter === 'all' ? 'is-on' : ''} aria-pressed={bedFilter === 'all'} onClick={() => setBedFilter('all')}>{t('All')}</button>
             {BEDS.map((bed) => (
-              <button key={bed.id} type="button" className={bedFilter === bed.id ? 'is-on' : ''} aria-pressed={bedFilter === bed.id} onClick={() => setBedFilter(bed.id)}>{bed.short}</button>
+              <button key={bed.id} type="button" className={bedFilter === bed.id ? 'is-on' : ''} aria-pressed={bedFilter === bed.id} onClick={() => setBedFilter(bed.id)}>{t(bed.short)}</button>
             ))}
           </div>
         </div>
         <div className="g-filter-row">
-          <span className="g-eyebrow">Growth</span>
+          <span className="g-eyebrow">{t('Growth')}</span>
           <div className="g-filter-chips">
-            <button type="button" className={stageFilter === 'all' ? 'is-on' : ''} aria-pressed={stageFilter === 'all'} onClick={() => setStageFilter('all')}>All stages</button>
+            <button type="button" className={stageFilter === 'all' ? 'is-on' : ''} aria-pressed={stageFilter === 'all'} onClick={() => setStageFilter('all')}>{t('All stages')}</button>
             {Object.entries(STAGES).map(([id, stage]) => (
               <button key={id} type="button" className={stageFilter === id ? 'is-on' : ''} aria-pressed={stageFilter === id} onClick={() => setStageFilter(id)}>
-                <GrowthGlyph stage={id} size={12} /> {stage.label}
+                <GrowthGlyph stage={id} size={12} /> {t(stage.label)}
               </button>
             ))}
           </div>
-          <span className="g-filter-count">{visibleCount} notes in view</span>
+          <span className="g-filter-count">{t('{count} notes in view', { count: visibleCount })}</span>
         </div>
       </div>
 
@@ -927,8 +935,8 @@ export function GardenIndex({ progress, navigate, initialBed = 'all', resetProgr
                 <div>
                   <span className="g-index-bed__number">{String(BEDS.indexOf(bed) + 1).padStart(2, '0')}</span>
                   <StageBadge stage={bed.stage} />
-                  <h2>{bed.title}</h2>
-                  <p>{bed.blurb}</p>
+                  <h2>{t(bed.title)}</h2>
+                  <p>{t(bed.blurb)}</p>
                 </div>
                 <div className="g-index-bed__aside">
                   <GrowthGlyph stage={bed.stage} size={44} />
@@ -960,6 +968,7 @@ export function GardenIndex({ progress, navigate, initialBed = 'all', resetProgr
 --------------------------------------------------------------------------- */
 
 export function RelatedNotes({ lesson, navigate }) {
+  const t = useT();
   const bed = bedForLesson(lesson);
   const notes = relatedLessons(lesson);
   if (!notes.length) return null;
@@ -981,7 +990,7 @@ export function RelatedNotes({ lesson, navigate }) {
               <span className="g-related-card__title">{note.title}</span>
               <span className="g-related-card__deck">{plainWords[note.id] || note.intro}</span>
               <span className="g-related-card__topics">{lessonTopics(note).slice(0, 3).join(' · ')}</span>
-              <span className="g-related-card__read">Read this note <ArrowUpRight size={14} aria-hidden="true" /></span>
+              <span className="g-related-card__read">{t('Read the note')} <ArrowUpRight size={14} aria-hidden="true" /></span>
             </button>
           );
         })}
