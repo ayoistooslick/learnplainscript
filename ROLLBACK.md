@@ -11,6 +11,20 @@ This repository keeps the complete frontend that existed before the digital-gard
 
 The repository already contained a tag named `learnplainscript-pre-garden-redesign` and a remote branch named `redesign/learnplainscript-digital-garden` from earlier work. Neither was overwritten or deleted. The unique `-2026-11-24` names above identify this snapshot and this redesign.
 
+## Remote main before this deployment
+
+While this redesign was in progress, `origin/main` advanced to `e364ee3010f9ca4afd9931dbe7aa1430e876d658` with the earlier garden and dark-theme commits `95b1f12` and `e364ee3`. Those commits were merged into this branch rather than replaced.
+
+- **Remote main tip before merge:** `e364ee3010f9ca4afd9931dbe7aa1430e876d658`
+- **Preservation tag:** `learnplainscript-main-before-garden-merge-2026-11-24`
+
+To restore that exact main state locally:
+
+```bash
+git fetch origin
+git switch --detach learnplainscript-main-before-garden-merge-2026-11-24
+```
+
 ## Restore the original source
 
 ```bash

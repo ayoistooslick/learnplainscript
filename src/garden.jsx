@@ -3,6 +3,7 @@ import {
   ArrowDown, ArrowRight, ArrowUpRight, Menu, Play, RotateCcw, X,
 } from 'lucide-react';
 import { availableLessons, plainWords } from './content.js';
+import { lessonTopics, relatedLessons as topicalRelatedLessons } from './garden.js';
 import { homepageSpecimen } from './examples.js';
 import { Tokens } from './highlight.jsx';
 import { Editor } from './editor.jsx';
@@ -105,19 +106,21 @@ export function stageForLesson(lesson) {
 }
 
 export function relatedLessons(lesson) {
+  // Topic affinity comes first; bed proximity fills any gaps.
+  const topical = topicalRelatedLessons(lesson, availableLessons);
   const bed = bedForLesson(lesson);
-  if (!bed) return availableLessons.filter((item) => item.id !== lesson.id).slice(0, 3);
+  if (!bed) return topical.slice(0, 3);
   const index = BEDS.indexOf(bed);
   const nearby = [BEDS[index + 1], BEDS[index - 1], BEDS[index + 2], BEDS[index - 2]]
     .filter(Boolean)
     .flatMap(lessonsForBed);
-  const sameBed = lessonsForBed(bed);
-  const seen = new Set([lesson.id]);
-  return [...sameBed, ...nearby].filter((item) => {
+  const seen = new Set([lesson.id, ...topical.map((item) => item.id)]);
+  const rest = [...lessonsForBed(bed), ...nearby].filter((item) => {
     if (seen.has(item.id)) return false;
     seen.add(item.id);
     return true;
-  }).slice(0, 3);
+  });
+  return [...topical, ...rest].slice(0, 3);
 }
 
 function nextLesson(progress) {
@@ -755,6 +758,7 @@ function IndexNote({ lesson, progress, navigate }) {
         <span className="g-index-note__peek" aria-hidden="true">
           <b>In this note</b>
           <span>{lesson.objectives[0]}</span>
+          <span className="g-index-note__peek-topics">{lessonTopics(lesson).join(' · ')}</span>
         </span>
       </button>
     </article>
@@ -879,6 +883,7 @@ export function RelatedNotes({ lesson, navigate }) {
               <span className="g-related-card__top"><StageBadge stage={stage} /><span>{lessonNumber(note)}</span></span>
               <span className="g-related-card__title">{note.title}</span>
               <span className="g-related-card__deck">{plainWords[note.id] || note.intro}</span>
+              <span className="g-related-card__topics">{lessonTopics(note).slice(0, 3).join(' · ')}</span>
               <span className="g-related-card__read">Read this note <ArrowUpRight size={14} aria-hidden="true" /></span>
             </button>
           );

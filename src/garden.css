@@ -1168,6 +1168,7 @@ button { font-family: inherit; }
   color: var(--g-ink-muted);
 }
 .g-index-note__peek b { display: block; margin-bottom: 0.15rem; font-size: 9px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--g-ink); }
+.g-index-note__peek-topics { display: block; margin-top: 0.35rem; font-family: var(--font-ui); font-size: 9px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--g-moss); }
 .g-index-note button:hover .g-index-note__peek, .g-index-note button:focus-visible .g-index-note__peek { opacity: 1; visibility: visible; transform: translateY(0); }
 .g-empty { display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem; padding: 3rem 0; }
 .g-empty h2 { margin: 0; font-size: 2rem; }
@@ -1204,6 +1205,7 @@ button { font-family: inherit; }
 .g-related-card__top > span:last-child { font-family: var(--font-mono); font-size: 9px; color: var(--g-ink-faint); }
 .g-related-card__title { margin: 1.1rem 0 0.35rem; font-family: var(--font-display); font-size: 1.35rem; line-height: 1.1; letter-spacing: -0.02em; }
 .g-related-card__deck { font-size: 13.5px; line-height: 1.48; color: var(--g-ink-muted); }
+.g-related-card__topics { display: block; margin-top: 0.65rem; font-family: var(--font-ui); font-size: 9px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--g-moss); }
 .g-related-card__read { display: inline-flex; align-items: center; gap: 0.3rem; margin-top: auto; padding-top: 0.8rem; font-family: var(--font-ui); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--g-moss); }
 
 .g-audience {
