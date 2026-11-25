@@ -1999,32 +1999,6 @@ p { margin: 0 0 1rem; }
   color: var(--ink-faint);
   padding-top: 0.15rem;
 }
-.marker-tray {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.2rem 0.35rem;
-  border: 1px solid var(--rule);
-  background: var(--paper-raised);
-}
-.marker-chip {
-  width: 24px;
-  height: 24px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid transparent;
-}
-.marker-chip span { width: 12px; height: 12px; border-radius: 50%; background: var(--marker); border: 1px solid var(--rule-strong); }
-.marker-chip.on { border-color: var(--oxblood); }
-.marker-style {
-  padding: 0.25rem 0.4rem;
-  font-family: var(--font-mono);
-  font-size: 8px;
-  text-transform: uppercase;
-  color: var(--ink-muted);
-}
-.marker-style.on { background: var(--ink); color: var(--paper); }
 .button.is-on { background: var(--ink); border-color: var(--ink); color: var(--paper); }
 .board-frame { border: 1px solid var(--ink); padding: 7px; background: var(--paper-raised); }
 .board-stage {
@@ -2043,22 +2017,6 @@ p { margin: 0 0 1rem; }
 .board-inner { display: flex; flex-direction: column; min-height: 500px; position: relative; z-index: 1; }
 .board-body { flex: 1; }
 .board-stage.is-zoomed .board-body { font-size: 1.14rem; }
-.board-stage.is-inking .wb-ink { pointer-events: auto; cursor: crosshair; touch-action: none; }
-.wb-ink { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
-.board-ink-hint {
-  position: absolute;
-  right: 0.7rem;
-  bottom: 0.6rem;
-  z-index: 4;
-  padding: 0.2rem 0.45rem;
-  border: 1px solid rgba(237, 230, 215, 0.25);
-  font-family: var(--font-mono);
-  font-size: 7.5px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--chalk-dim);
-  background: rgba(0, 0, 0, 0.28);
-}
 .wb-page-title {
   font-family: var(--font-ui);
   font-size: 8.5px;

@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  ArrowDown, ArrowRight, ArrowUpRight, Menu, Play, RotateCcw, X,
+  ArrowDown, ArrowRight, ArrowUpRight, Languages, Menu, Play, RotateCcw, X,
 } from 'lucide-react';
 import { availableLessons, plainWords } from './content.js';
 import { lessonTopics, relatedLessons as topicalRelatedLessons } from './garden.js';
+import { LANGUAGES, LANGUAGE_KEY, savedLanguage } from './languages.js';
 import { homepageSpecimen } from './examples.js';
 import { Tokens } from './highlight.jsx';
 import { Editor } from './editor.jsx';
@@ -313,6 +314,40 @@ export function GardenDrawer({ open, onClose, navigate, progress, theme, onToggl
   const panelRef = useRef(null);
   const returnFocus = useRef(null);
 
+  const [language, setLanguage] = useState(savedLanguage);
+  const [langOpen, setLangOpen] = useState(false);
+  const [langQuery, setLangQuery] = useState('');
+  const searchRef = useRef(null);
+
+  useEffect(() => {
+    document.documentElement.lang = language.code;
+    try {
+      window.localStorage.setItem(LANGUAGE_KEY, language.code);
+    } catch {
+      // A reading preference is optional; private browsing can refuse storage.
+    }
+  }, [language]);
+
+  // A closed drawer should reopen at its top, not halfway through the language list.
+  useEffect(() => {
+    if (open) return;
+    setLangOpen(false);
+    setLangQuery('');
+  }, [open]);
+
+  useEffect(() => {
+    if (!langOpen) return undefined;
+    const frame = window.requestAnimationFrame(() => searchRef.current?.focus());
+    return () => window.cancelAnimationFrame(frame);
+  }, [langOpen]);
+
+  const query = langQuery.trim().toLowerCase();
+  const languageMatches = query
+    ? LANGUAGES.filter((item) => item.name.toLowerCase().includes(query)
+      || item.native.toLowerCase().includes(query)
+      || item.code.toLowerCase().includes(query))
+    : LANGUAGES;
+
   useEffect(() => {
     if (!open) return undefined;
     returnFocus.current = document.activeElement;
@@ -373,19 +408,81 @@ export function GardenDrawer({ open, onClose, navigate, progress, theme, onToggl
             <span className="g-eyebrow">Reading light</span>
             <span className="g-drawer__theme-name">{isDark ? 'Night garden' : 'Day garden'}</span>
           </div>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={isDark}
-            aria-label={isDark ? 'Switch to the day garden' : 'Switch to the night garden'}
-            className={`g-switch${isDark ? ' is-night' : ''}`}
-            onClick={onToggleTheme}
-          >
-            <span className={isDark ? '' : 'is-on'}>Day</span>
-            <span className="g-switch__track" aria-hidden="true"><span className="g-switch__thumb" /></span>
-            <span className={isDark ? 'is-on' : ''}>Night</span>
-          </button>
+          <div className="g-drawer__controls">
+            <button
+              type="button"
+              className={`g-lang-trigger${langOpen ? ' is-open' : ''}`}
+              onClick={() => setLangOpen((value) => !value)}
+              aria-expanded={langOpen}
+              aria-controls={langOpen ? 'garden-language' : undefined}
+              aria-label={`Document language: ${language.name}. Change language`}
+              title={`Language · ${language.name}`}
+            >
+              <Languages size={18} strokeWidth={1.6} aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={isDark}
+              aria-label={isDark ? 'Switch to the day garden' : 'Switch to the night garden'}
+              className={`g-switch${isDark ? ' is-night' : ''}`}
+              onClick={onToggleTheme}
+            >
+              <span className={isDark ? '' : 'is-on'}>Day</span>
+              <span className="g-switch__track" aria-hidden="true"><span className="g-switch__thumb" /></span>
+              <span className={isDark ? 'is-on' : ''}>Night</span>
+            </button>
+          </div>
         </div>
+
+        {langOpen && (
+          <div
+            className="g-lang"
+            id="garden-language"
+            onKeyDown={(event) => {
+              if (event.key !== 'Escape') return;
+              event.preventDefault();
+              event.stopPropagation();
+              setLangOpen(false);
+            }}
+          >
+            <div className="g-lang__head">
+              <label className="g-eyebrow" htmlFor="g-lang-search">Document language</label>
+              <span className="g-lang__current" lang={language.code} dir={language.rtl ? 'rtl' : undefined}>{language.native}</span>
+            </div>
+            <p className="g-lang__note">The notes are written in English. This sets the page language for hyphenation, spell-checking, screen readers and your browser's translator.</p>
+            <input
+              id="g-lang-search"
+              className="g-lang__search"
+              ref={searchRef}
+              type="search"
+              value={langQuery}
+              onChange={(event) => setLangQuery(event.target.value)}
+              placeholder={`Search ${LANGUAGES.length} languages`}
+              autoComplete="off"
+            />
+            <ul className="g-lang__list">
+              {languageMatches.map((item) => (
+                <li key={item.code}>
+                  <button
+                    type="button"
+                    className={item.code === language.code ? 'is-active' : ''}
+                    aria-pressed={item.code === language.code}
+                    onClick={() => {
+                      setLanguage(item);
+                      setLangOpen(false);
+                      setLangQuery('');
+                    }}
+                  >
+                    <span lang={item.code} dir={item.rtl ? 'rtl' : undefined}>{item.native}</span>
+                    <em>{item.name}</em>
+                  </button>
+                </li>
+              ))}
+              {!languageMatches.length && <li className="g-lang__empty">No language matches “{langQuery}”.</li>}
+            </ul>
+          </div>
+        )}
 
         <p className="g-eyebrow g-drawer__label">Wander</p>
         <nav className="g-drawer__nav" aria-label="All sections">
@@ -418,7 +515,7 @@ export function GardenDrawer({ open, onClose, navigate, progress, theme, onToggl
 
         <div className="g-drawer__foot">
           <p>Progress is kept in this browser. No account, no trackers.</p>
-          <a href="https://plainscript.vercel.app/" target="_blank" rel="noreferrer">Official PlainScript documentation <ArrowUpRight size={11} aria-hidden="true" /></a>
+          <a href="https://ayoistooslick.github.io/plainscript" target="_blank" rel="noreferrer">Official PlainScript documentation <ArrowUpRight size={11} aria-hidden="true" /></a>
         </div>
       </div>
     </div>
@@ -472,7 +569,7 @@ export function GardenFooter({ navigate }) {
         <div>
           <p className="g-eyebrow">Colophon</p>
           <p className="g-footer__copy">Set in Newsreader, Lato and IBM Plex Mono. Every runnable specimen is checked and executed with <code>plainscript-lang@2.3.1</code>.</p>
-          <a href="https://plainscript.vercel.app/" target="_blank" rel="noreferrer">The language documentation <ArrowUpRight size={11} aria-hidden="true" /></a>
+          <a href="https://ayoistooslick.github.io/plainscript" target="_blank" rel="noreferrer">The language documentation <ArrowUpRight size={11} aria-hidden="true" /></a>
         </div>
       </div>
       <div className="g-footer__bottom">

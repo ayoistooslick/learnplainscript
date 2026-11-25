@@ -291,7 +291,7 @@ function Drawer({ open, onClose, navigate, progress, theme, onToggleTheme }) {
         </div>
         <div className="drawer-foot">
           <p>Progress is saved in this browser. No accounts, no trackers.</p>
-          <a href="https://plainscript.vercel.app/" target="_blank" rel="noreferrer">Official PlainScript documentation ↗</a>
+          <a href="https://ayoistooslick.github.io/plainscript" target="_blank" rel="noreferrer">Official PlainScript documentation ↗</a>
         </div>
       </div>
     </div>
@@ -374,7 +374,7 @@ function Colophon({ navigate }) {
         <div>
           <p className="colophon-label">Imprint</p>
           <p className="colophon-copy">PlainScript 2.3.1 is an independent, MIT-licensed language created by Ayodele Ayokunle David. Every runnable specimen here is compiled by the published <code>plainscript-lang</code> package.</p>
-          <a className="colophon-link" href="https://plainscript.vercel.app/" target="_blank" rel="noreferrer">The official documentation ↗</a>
+          <a className="colophon-link" href="https://ayoistooslick.github.io/plainscript" target="_blank" rel="noreferrer">The official documentation ↗</a>
         </div>
       </div>
       <div className="imprint">

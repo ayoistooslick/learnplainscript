@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, Pause, Play, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import { availableLessons } from './content.js';
 import { Inline } from './highlight.jsx';
 import { useRunner } from './runner.jsx';
@@ -12,17 +12,9 @@ import { useRunner } from './runner.jsx';
    decides how to present it. Diagrams are drawn with animated SVG
    strokes, code is typed onto the board, the quiz is answerable on the
    board, and the specimen can be executed by the published compiler.
-   Annotations are real pointer strokes, kept per lesson in this browser.
+   The board is read-only: it teaches, it does not take marks.
 ------------------------------------------------------------------- */
 
-const MARKERS = [
-  { id: 'chalk', label: 'Chalk', color: '#EDE6D7' },
-  { id: 'mint', label: 'Sage', color: '#CDD9BF' },
-  { id: 'amber', label: 'Amber', color: '#E4C48D' },
-  { id: 'coral', label: 'Rose', color: '#D2A8A0' },
-];
-
-const INK_KEY = 'learnplainscript.board.ink.v1';
 const PAGE_LABELS = {
   title: 'Welcome',
   objectives: 'Objectives',
@@ -33,15 +25,6 @@ const PAGE_LABELS = {
   exercise: 'Exercise',
   question: 'Check',
 };
-
-function loadInk() {
-  try {
-    const saved = JSON.parse(window.localStorage.getItem(INK_KEY) || '{}');
-    return saved && typeof saved === 'object' ? saved : {};
-  } catch {
-    return {};
-  }
-}
 
 function buildPages(lesson) {
   return [
@@ -214,48 +197,6 @@ function BoardDiagram({ variant = 'flow' }) {
   );
 }
 
-function InkLayer({ paths, draft, enabled, onPointerDown, onPointerMove, onPointerUp }) {
-  const points = (path) => path.points.map(([x, y]) => `${x * 1000},${y * 700}`).join(' ');
-  return (
-    <svg
-      className={`wb-ink${enabled ? ' is-live' : ''}`}
-      viewBox="0 0 1000 700"
-      preserveAspectRatio="none"
-      aria-hidden="true"
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      onPointerCancel={onPointerUp}
-      onPointerLeave={onPointerUp}
-    >
-      {paths.map((path, index) => (
-        <polyline
-          key={index}
-          points={points(path)}
-          fill="none"
-          stroke={path.color}
-          strokeWidth={path.width}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          vectorEffect="non-scaling-stroke"
-          opacity="0.92"
-        />
-      ))}
-      {draft && (
-        <polyline
-          points={points(draft)}
-          fill="none"
-          stroke={draft.color}
-          strokeWidth={draft.width}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          vectorEffect="non-scaling-stroke"
-        />
-      )}
-    </svg>
-  );
-}
-
 // The number of strokes a page writes. PageBody renders exactly this many
 // elements, so playback and the toolbar readout stay in step with the board.
 function strokeCount(page) {
@@ -399,17 +340,8 @@ export function Whiteboard({ navigate, progress, saveNote, saveQuiz }) {
   const [revealed, setRevealed] = useState(3);
   const [playing, setPlaying] = useState(false);
   const [zoom, setZoom] = useState(false);
-  const [marker, setMarker] = useState(MARKERS[0]);
-  const [tool, setTool] = useState('chalk');
-  const [inkMode, setInkMode] = useState(false);
   const [note, setNote] = useState(progress.notes?.[lessonId] || '');
   const [quizChoice, setQuizChoice] = useState(null);
-  // Ink is stored with the lesson it belongs to, so changing lesson cannot
-  // write one board's annotations over another's.
-  const [ink, setInk] = useState(() => ({ lesson: lessonId, paths: loadInk()[lessonId] || [] }));
-  const paths = ink.lesson === lessonId ? ink.paths : [];
-  const [draft, setDraft] = useState(null);
-  const draftRef = useRef(null);
   const { result, run, reset } = useRunner();
 
   useEffect(() => {
@@ -418,24 +350,10 @@ export function Whiteboard({ navigate, progress, saveNote, saveQuiz }) {
     setRevealed(3);
     setPlaying(false);
     setQuizChoice(null);
-    setInk({ lesson: lessonId, paths: loadInk()[lessonId] || [] });
-    setDraft(null);
-    draftRef.current = null;
     reset();
     // progress.notes is read once per lesson, not on every keystroke.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lessonId, reset]);
-
-  useEffect(() => {
-    if (ink.lesson !== lessonId) return;
-    try {
-      const all = loadInk();
-      all[ink.lesson] = ink.paths;
-      window.localStorage.setItem(INK_KEY, JSON.stringify(all));
-    } catch {
-      // Annotations are a convenience; private browsing can refuse storage.
-    }
-  }, [ink, lessonId]);
 
   const page = pages[pageIndex];
   const total = strokeCount(page);
@@ -497,53 +415,13 @@ export function Whiteboard({ navigate, progress, saveNote, saveQuiz }) {
     if (saveQuiz) saveQuiz(lesson.id, index === page.quiz.answer ? 1 : 0);
   };
 
-  const pointerPoint = (event) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    return [
-      Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width)),
-      Math.min(1, Math.max(0, (event.clientY - rect.top) / rect.height)),
-    ];
-  };
-
-  const startInk = (event) => {
-    if (!inkMode) return;
-    event.preventDefault();
-    event.currentTarget.setPointerCapture?.(event.pointerId);
-    const path = { color: marker.color, width: tool === 'marker' ? 8 : 3, points: [pointerPoint(event)] };
-    draftRef.current = path;
-    setDraft(path);
-  };
-
-  const moveInk = (event) => {
-    if (!inkMode || !draftRef.current) return;
-    const point = pointerPoint(event);
-    const points = draftRef.current.points;
-    const last = points[points.length - 1];
-    if (last && Math.hypot(point[0] - last[0], point[1] - last[1]) < 0.004) return;
-    const path = { ...draftRef.current, points: [...points, point] };
-    draftRef.current = path;
-    setDraft(path);
-  };
-
-  const endInk = () => {
-    if (!draftRef.current) return;
-    const path = draftRef.current;
-    draftRef.current = null;
-    setDraft(null);
-    if (path.points.length > 1) {
-      setInk((current) => current.lesson === lessonId
-        ? { lesson: current.lesson, paths: [...current.paths, path].slice(-250) }
-        : current);
-    }
-  };
-
   return (
     <div className="whiteboard-page board-page">
       <div className="board-head">
         <div>
           <p className="eyebrow">The lecture board · PlainScript 2.3.1</p>
           <h1>The board,<br /><em>in strokes.</em></h1>
-          <p>A teaching surface, not a slideshow. The lesson is written on one stroke at a time. Draw on it, run the specimen against the real compiler, answer the check on the board, and keep notes beneath it.</p>
+          <p>A teaching surface, not a slideshow. The lesson is written on one stroke at a time. Run the specimen against the real compiler, answer the check on the board, and keep notes beneath it.</p>
         </div>
         <div className="board-folio">
           <span className="folio-label">Now teaching</span>
@@ -570,31 +448,11 @@ export function Whiteboard({ navigate, progress, saveNote, saveQuiz }) {
           {PAGE_LABELS[page.kind]} · page {pageIndex + 1}/{pages.length} · stroke {Math.min(revealed, total)}/{total}
         </span>
 
-        <div className="marker-tray" role="group" aria-label="Marker colour">
-          {MARKERS.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              className={`marker-chip ${marker.id === item.id ? 'on' : ''}`}
-              style={{ '--marker': item.color }}
-              onClick={() => { setMarker(item); setInkMode(true); }}
-              aria-label={`${item.label} marker`}
-              aria-pressed={marker.id === item.id}
-            ><span /></button>
-          ))}
-          <button type="button" className={`marker-style ${tool === 'chalk' ? 'on' : ''}`} onClick={() => setTool('chalk')} aria-pressed={tool === 'chalk'}>Chalk</button>
-          <button type="button" className={`marker-style ${tool === 'marker' ? 'on' : ''}`} onClick={() => setTool('marker')} aria-pressed={tool === 'marker'}>Marker</button>
-        </div>
-
-        <button type="button" className={`button button--line button--small${inkMode ? ' is-on' : ''}`} onClick={() => setInkMode((value) => !value)} aria-pressed={inkMode}>
-          {inkMode ? 'Drawing on' : 'Draw on board'}
-        </button>
-        <button type="button" className="icon-button" onClick={() => setInk({ lesson: lessonId, paths: [] })} aria-label="Clear board annotations" title="Clear annotations"><Trash2 size={14} strokeWidth={1.8} aria-hidden="true" /></button>
         <button type="button" className="icon-button" onClick={() => setZoom((value) => !value)} aria-label={zoom ? 'Zoom out' : 'Zoom in'}>{zoom ? '−' : '+'}</button>
         <button type="button" className="link-button" onClick={() => navigate(`/learn/${lesson.id}`)}>Read the lesson ↗</button>
       </div>
 
-      <div className={`wb-stage board-stage${zoom ? ' is-zoomed' : ''}${inkMode ? ' is-inking' : ''}`}>
+      <div className={`wb-stage board-stage${zoom ? ' is-zoomed' : ''}`}>
         <div className="board-inner" key={`${lessonId}-${pageIndex}`}>
           <div className="wb-page-title">{PAGE_LABELS[page.kind]}</div>
           <div className="board-body">
@@ -614,15 +472,6 @@ export function Whiteboard({ navigate, progress, saveNote, saveQuiz }) {
             {pages.map((_, index) => <span key={index} className={index === pageIndex ? 'on' : index < pageIndex ? 'done' : ''} />)}
           </div>
         </div>
-        <InkLayer
-          paths={paths}
-          draft={draft}
-          enabled={inkMode}
-          onPointerDown={startInk}
-          onPointerMove={moveInk}
-          onPointerUp={endInk}
-        />
-        {inkMode && <span className="board-ink-hint">Draw directly on the board · {paths.length} annotations</span>}
       </div>
 
       <div className="board-under">
@@ -638,7 +487,6 @@ export function Whiteboard({ navigate, progress, saveNote, saveQuiz }) {
             <li><kbd>←</kbd> steps back</li>
             <li><kbd>Space</kbd> plays or pauses</li>
             <li>Play advances a stroke every two seconds</li>
-            <li>Drawings are kept per lesson in this browser</li>
             <li>The compiler is the same 2.3.1 build as the playground</li>
           </ul>
         </div>
