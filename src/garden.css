@@ -648,7 +648,7 @@ button { font-family: inherit; }
    Home: hero
 --------------------------------------------------------------------------- */
 
-.g-home { padding-top: clamp(2.4rem, 6vw, 5rem); }
+.g-home { padding-top: clamp(1.2rem, 3vw, 2.4rem); }
 .g-hero {
   display: grid;
   grid-template-columns: minmax(0, 1.36fr) minmax(290px, 0.64fr);
@@ -1060,20 +1060,19 @@ button { font-family: inherit; }
 .g-shed__bench > .g-caption { max-width: 62ch; }
 
 .g-closing {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(140px, 260px);
-  column-gap: clamp(1rem, 4vw, 3.2rem);
-  align-items: end;
   max-width: 940px;
   padding: clamp(3.5rem, 6vw, 5.5rem) 0 0;
 }
-.g-closing > * { grid-column: 1; }
+
+/* The reader loop opens the page, above the headline. */
+.g-top-figure {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 0 clamp(0.6rem, 2vw, 1.4rem);
+}
 .g-nod {
-  grid-column: 2;
-  grid-row: 1 / span 4;
-  align-self: end;
   display: block;
-  width: 100%;
+  width: min(260px, 46vw);
   height: auto;
   border: 0;
   outline: 0;
@@ -1087,18 +1086,12 @@ button { font-family: inherit; }
 .g-nod::-webkit-media-controls,
 .g-nod::-webkit-media-controls-panel,
 .g-nod::-webkit-media-controls-play-button { display: none !important; -webkit-appearance: none; }
-/* The loop is graded for warm paper; on the dark sheet it needs to sit back. */
-:root[data-theme="dark"] .g-nod { filter: saturate(0.9) brightness(0.9) contrast(1.03); }
+/* The loop is graded for warm paper; on the night sheet hold the highlights
+   down only as far as the linework still reads against the dark ground. */
+:root[data-theme="dark"] .g-nod { filter: saturate(0.96) brightness(0.97); }
 @media (max-width: 720px) {
-  .g-closing { grid-template-columns: 1fr; }
-  .g-nod {
-    grid-column: 1;
-    grid-row: auto;
-    order: -1;
-    justify-self: start;
-    width: min(220px, 62%);
-    margin: 0 0 1.6rem;
-  }
+  .g-top-figure { justify-content: flex-start; }
+  .g-nod { width: min(200px, 58%); }
 }
 .g-closing h2 { margin: 0 0 0.7rem; font-size: clamp(2.4rem, 4.3vw, 3.8rem); line-height: 1; letter-spacing: -0.035em; }
 .g-closing > p:not(.g-eyebrow) { max-width: 42ch; margin-bottom: 1.3rem; font-size: 17px; color: var(--g-ink-muted); }

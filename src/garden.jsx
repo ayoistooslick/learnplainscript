@@ -678,6 +678,10 @@ export function GardenHome({ progress, navigate }) {
 
   return (
     <div className="g-home">
+      <div className="g-top-figure">
+        <NoddingReader />
+      </div>
+
       <section className="g-hero">
         <div className="g-hero__copy">
           <p className="g-kicker"><GardenMark size={15} /> {'An independent field guide to PlainScript 2.3.1'}</p>
@@ -754,7 +758,6 @@ export function GardenHome({ progress, navigate }) {
         <button type="button" className="g-button g-button--primary" onClick={() => navigate('/learn/why-plainscript')}>
           {'Open the first note'} <ArrowRight size={16} aria-hidden="true" />
         </button>
-        <NoddingReader />
       </section>
     </div>
   );
