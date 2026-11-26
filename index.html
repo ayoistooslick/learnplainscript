@@ -20,18 +20,6 @@
         }
       })();
     </script>
-    <script>
-      (() => {
-        try {
-          const code = window.localStorage.getItem('learnplainscript.language.v1');
-          if (code && /^[a-z]{2,3}(-[A-Za-z]{2,4})?$/.test(code)) {
-            document.documentElement.lang = code;
-          }
-        } catch {
-          // A reading preference is optional; private browsing can refuse storage.
-        }
-      })();
-    </script>
     <meta name="description" content="A garden for learning PlainScript 2.3.1: short illustrated notes, real runnable programs, a practice bench, and a path that remembers your place." />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23f7f4ec'/%3E%3Cpath d='M16 28V15' stroke='%23486546' stroke-width='1.7' stroke-linecap='round'/%3E%3Cpath d='M16 21C10.5 21 7 17.5 7 11.5C12.5 11.5 16 15 16 21Z' fill='%23486546'/%3E%3Cpath d='M16 16C16 10 19.5 6.5 25 6.5C25 12.5 21.5 16 16 16Z' fill='%23a8492f'/%3E%3Cpath d='M10 28H22' stroke='%23486546' stroke-width='1.7' stroke-linecap='round'/%3E%3C/svg%3E" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />

@@ -9,8 +9,6 @@ import { CodeSpecimen, Inline, Tokens } from './highlight.jsx';
 import { Editor } from './editor.jsx';
 import { Output, useRunner } from './runner.jsx';
 import { Whiteboard } from './board.jsx';
-import { I18nProvider, useT } from './i18n.js';
-import { LANGUAGE_KEY, savedLanguage } from './languages.js';
 import { PredictRun, TryIt } from './interactive.jsx';
 import {
   GardenHeader, GardenDrawer, GardenTabs, GardenFooter, GardenHome, GardenIndex,
@@ -322,8 +320,7 @@ function MobileTabs({ path, navigate }) {
   );
 }
 
-function Shell({ path, navigate, progress, railOpen, setRailOpen, theme, onToggleTheme, language, onLanguage, children }) {
-  const t = useT();
+function Shell({ path, navigate, progress, railOpen, setRailOpen, theme, onToggleTheme, children }) {
   const [reading, setReading] = useState(0);
   useEffect(() => {
     const onScroll = () => {
@@ -343,7 +340,7 @@ function Shell({ path, navigate, progress, railOpen, setRailOpen, theme, onToggl
   const closeRail = useCallback(() => setRailOpen(false), [setRailOpen]);
   return (
     <div className="app g-app">
-      <a className="skip" href="#main">{t('Skip to content')}</a>
+      <a className="skip" href="#main">{'Skip to content'}</a>
       <GardenHeader path={path} navigate={go} progress={progress} onMenu={() => setRailOpen(true)} reading={reading} menuOpen={railOpen} />
       <main id="main" className="page g-page">{children}</main>
       <GardenFooter navigate={go} />
@@ -355,8 +352,6 @@ function Shell({ path, navigate, progress, railOpen, setRailOpen, theme, onToggl
         progress={progress}
         theme={theme}
         onToggleTheme={onToggleTheme}
-        language={language}
-        onLanguage={onLanguage}
       />
     </div>
   );
@@ -1391,15 +1386,6 @@ function App() {
   const [railOpen, setRailOpen] = useState(false);
   const progressState = useProgress();
   const { theme, toggleTheme } = useTheme();
-  const [language, setLanguage] = useState(savedLanguage);
-  useEffect(() => {
-    document.documentElement.lang = language.code;
-    try {
-      window.localStorage.setItem(LANGUAGE_KEY, language.code);
-    } catch {
-      // A reading preference is optional; private browsing can refuse storage.
-    }
-  }, [language]);
   useEffect(() => {
     const onPop = () => { setPath(routePath()); setSearch(window.location.search); };
     window.addEventListener('popstate', onPop);
@@ -1477,21 +1463,17 @@ function App() {
   useEffect(() => { document.title = title; }, [title]);
   useEffect(() => { if (!window.location.hash) window.scrollTo(0, 0); }, [path]);
   return (
-    <I18nProvider language={language}>
-      <Shell
-        path={path}
-        navigate={navigate}
-        progress={progressState.progress}
-        railOpen={railOpen}
-        setRailOpen={setRailOpen}
-        theme={theme}
-        onToggleTheme={toggleTheme}
-        language={language}
-        onLanguage={setLanguage}
-      >
-        {view}
-      </Shell>
-    </I18nProvider>
+    <Shell
+      path={path}
+      navigate={navigate}
+      progress={progressState.progress}
+      railOpen={railOpen}
+      setRailOpen={setRailOpen}
+      theme={theme}
+      onToggleTheme={toggleTheme}
+    >
+      {view}
+    </Shell>
   );
 }
 
