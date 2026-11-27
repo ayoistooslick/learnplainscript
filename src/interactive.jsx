@@ -93,9 +93,8 @@ export function PredictRun({ lesson }) {
     <div className="predict">
       <div className="predict-head">
         <span className="predict-label">Stop and predict</span>
-        <span className="predict-note">The specimen is printed below. Read it before you answer.</span>
+        <span className="predict-note">The program is above, in “The code”. Read it before you answer.</span>
       </div>
-      <CodeSpecimen code={lesson.example} label="Specimen" file={`${lesson.id}.pln`} />
       <p className="predict-question">Before you run it, what will this program print?</p>
       <label className="predict-field">
         <span className="sr-only">Your predicted output</span>

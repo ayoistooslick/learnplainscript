@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  ArrowDown, ArrowRight, ArrowUpRight, Menu, Play, RotateCcw, X,
+  ArrowRight, ArrowUpRight, Menu, Play, RotateCcw, X,
 } from 'lucide-react';
 import { availableLessons, plainWords } from './content.js';
 import { lessonTopics, relatedLessons as topicalRelatedLessons } from './garden.js';
@@ -518,17 +518,17 @@ function GardenFieldNote({ navigate }) {
   return (
     <aside className="g-field-note">
       <div className="g-field-note__head">
-        <span className="g-eyebrow">Field note 01</span>
+        <span className="g-eyebrow">The syntax, in full</span>
         <span>hello.pln</span>
       </div>
       <pre className="g-field-note__code"><code><Tokens code={homepageSpecimen} /></code></pre>
-      <div className="g-field-note__seal">
-        <GrowthGlyph stage="seedling" size={30} />
-        <span>One import.<br />One function.<br />One call.</span>
+      <div className="g-field-note__out">
+        <span>Output</span>
+        <code>Hello, reader.</code>
       </div>
       <div className="g-field-note__foot">
-        <p>A real program, ready to change and run. No simulation.</p>
-        <button type="button" className="g-text-link" onClick={() => navigate('/playground')}>Open the potting shed <ArrowRight size={14} aria-hidden="true" /></button>
+        <p>One import, one function, one call — and a real compiler behind Run.</p>
+        <button type="button" className="g-text-link" onClick={() => navigate('/playground')}>Try the quickstart <ArrowRight size={14} aria-hidden="true" /></button>
       </div>
     </aside>
   );
@@ -609,23 +609,71 @@ function GardenNoteCard({ lesson, navigate, feature = false }) {
   );
 }
 
-function GardenMapIntro({ navigate }) {
+function GardenPath({ navigate }) {
+  const steps = [
+    { no: '01', title: 'Quickstart', line: 'Run a program in the browser. No install, no account.', cta: 'Open the playground', to: '/playground' },
+    { no: '02', title: 'Core syntax', line: 'Values, types, blocks, functions: one short note each.', cta: 'Begin at the roots', to: '/learn?bed=roots' },
+    { no: '03', title: 'Lessons and examples', line: 'Twenty-two notes, each ending in code you can run.', cta: 'See every note', to: '/learn' },
+  ];
   return (
-    <section className="g-map-intro" aria-labelledby="g-map-title">
+    <section className="g-map-intro g-path" aria-labelledby="g-path-title">
       <div className="g-map-intro__copy">
-        <p className="g-eyebrow">A map, not a ladder</p>
-        <h2 id="g-map-title">Follow a bed.<br /><em>Or follow a question.</em></h2>
-        <p>The course has a clear reading order, but curiosity rarely moves in a straight line. Start at the gate, return to your place, or wander into the bed that answers the question you have now.</p>
-        <ol className="g-map-intro__steps">
-          <li><span>01</span><div><b>Choose a bed</b><p>Each bed gathers the notes that belong together.</p></div></li>
-          <li><span>02</span><div><b>Read a note</b><p>Short explanations, real examples, no filler.</p></div></li>
-          <li><span>03</span><div><b>Run the program</b><p>The compiler answers. Your progress is kept in this browser.</p></div></li>
+        <p className="g-eyebrow">The path</p>
+        <h2 id="g-path-title">Quickstart.<br /><em>Syntax. Then examples.</em></h2>
+        <p>Three steps, in this order. Leave and come back whenever you like.</p>
+        <ol className="g-map-intro__steps g-path__steps">
+          {steps.map((step) => (
+            <li key={step.no}>
+              <span>{step.no}</span>
+              <div>
+                <b>{step.title}</b>
+                <p>{step.line}</p>
+                <button type="button" className="g-text-link" onClick={() => navigate(step.to)}>{step.cta} <ArrowRight size={13} aria-hidden="true" /></button>
+              </div>
+            </li>
+          ))}
         </ol>
-        <button type="button" className="g-text-link" onClick={() => navigate('/learn')}>Open the full garden index <ArrowRight size={14} aria-hidden="true" /></button>
       </div>
       <div className="g-map-intro__plot">
         <GardenPlot />
-        <p className="g-caption">The garden is a reading map, not a checklist. Every bed is open.</p>
+        <p className="g-caption">The same course as a map. Every bed is open.</p>
+      </div>
+    </section>
+  );
+}
+
+function GardenKit({ navigate }) {
+  return (
+    <section className="g-kit" aria-labelledby="g-kit-title">
+      <header className="g-section-head">
+        <div>
+          <p className="g-eyebrow">Learn your way</p>
+          <h2 id="g-kit-title">Read it, watch it,<br /><em>keep it.</em></h2>
+        </div>
+        <div className="g-section-head__aside">
+          <p>Prefer paper, or a recording you can pause? Both live here.</p>
+        </div>
+      </header>
+      <div className="g-kit__grid">
+        <a className="g-kit__card" href="/plainscript-quick-reference.html" download="plainscript-quick-reference.html">
+          <span className="g-kit__kind">Quick reference · A4 · print-ready</span>
+          <b>Every PlainScript word on one page.</b>
+          <span className="g-kit__mini" aria-hidden="true">
+            <span className="g-kit__mini-line" />
+            <span className="g-kit__mini-line" />
+            <span className="g-kit__mini-line g-kit__mini-line--short" />
+            <span className="g-kit__mini-line" />
+            <span className="g-kit__mini-line g-kit__mini-line--short" />
+            <span className="g-kit__mini-stamp">1 page</span>
+          </span>
+          <span className="g-kit__cta">Download the cheat sheet <ArrowUpRight size={14} aria-hidden="true" /></span>
+        </a>
+        <div className="g-kit__card g-kit__card--slot">
+          <span className="g-kit__kind">Walkthrough · 90 seconds · video slot</span>
+          <b>Watch the whole loop: write, check, run.</b>
+          <span className="g-kit__frame" aria-hidden="true"><Play size={20} strokeWidth={1.4} /><span>Walkthrough video</span></span>
+          <button type="button" className="g-kit__cta g-kit__cta--link" onClick={() => navigate('/playground')}>Recording coming soon — use the live playground <ArrowRight size={14} aria-hidden="true" /></button>
+        </div>
       </div>
     </section>
   );
@@ -637,7 +685,7 @@ function GardenShed({ navigate }) {
       <div className="g-shed__copy">
         <p className="g-eyebrow">{'The potting shed'}</p>
         <h2 id="g-shed-title">{'Try a sentence'}<br /><em>{'before you trust it.'}</em></h2>
-        <p>This is the same compiler the lessons use. Change the greeting, press Run, and read the answer for yourself. Nothing is saved, so nothing can break.</p>
+        <p>The same compiler the lessons use. Change the greeting, press Run, and read the answer. Nothing is saved.</p>
         <button type="button" className="g-text-link" onClick={() => navigate('/playground')}>{'Open the full playground'} <ArrowRight size={14} aria-hidden="true" /></button>
       </div>
       <div className="g-shed__bench">
@@ -685,22 +733,24 @@ export function GardenHome({ progress, navigate }) {
       <section className="g-hero">
         <div className="g-hero__copy">
           <p className="g-kicker"><GardenMark size={15} /> {'An independent field guide to PlainScript 2.3.1'}</p>
-          <h1>{'A garden for learning to '}<em>{'write plainly.'}</em></h1>
-          <p className="g-hero__deck">{'PlainScript is a small, statically typed language that reads close to English. This is a place to learn it slowly: twenty-two notes, real programs, and a compiler that always answers honestly.'}</p>
+          <h1>{'PlainScript reads '}<em>{'like a sentence.'}</em></h1>
+          <p className="g-hero__deck">{'A small, typed language that compiles to ordinary JavaScript. Read each line, then run it — the compiler answers immediately.'}</p>
           <div className="g-hero__actions">
             <button type="button" className="g-button g-button--primary" onClick={() => navigate(`/learn/${next.id}`)}>
-              {(started ? 'Continue learning' : 'Begin at lesson 01')} <ArrowRight size={16} aria-hidden="true" />
+              {(started ? 'Continue learning' : 'Start learning')} <ArrowRight size={16} aria-hidden="true" />
             </button>
-            <a className="g-text-link" href="#garden" onClick={(event) => { event.preventDefault(); document.getElementById('garden')?.scrollIntoView({ behavior: 'smooth' }); }}>
-              {'Wander the garden'} <ArrowDown size={14} aria-hidden="true" />
-            </a>
+            <button type="button" className="g-text-link" onClick={() => navigate('/playground')}>
+              {'Try the quickstart'} <ArrowRight size={14} aria-hidden="true" />
+            </button>
           </div>
-          <p className="g-hero__meta">{availableLessons.length} notes · {BEDS.length} beds · no account · real compiler</p>
+          <p className="g-hero__meta">{availableLessons.length} notes · {BEDS.length} beds · real compiler · no account</p>
         </div>
         <GardenFieldNote navigate={navigate} />
       </section>
 
       <GardenHere progress={progress} navigate={navigate} />
+
+      <GardenPath navigate={navigate} />
 
       <section className="g-garden" id="garden" aria-labelledby="g-garden-title">
         <header className="g-section-head">
@@ -709,7 +759,7 @@ export function GardenHome({ progress, navigate }) {
             <h2 id="g-garden-title">{'Six beds,'}<br /><em>{'one growing course.'}</em></h2>
           </div>
           <div className="g-section-head__aside">
-            <p>Every note is a short, complete read. The beds group related ideas so you can follow the path or go straight to what you need.</p>
+            <p>Start at a bed, or jump to the topic you need. Every note is short enough to finish in one sitting.</p>
             <button type="button" className="g-text-link" onClick={() => navigate('/learn')}>See all {availableLessons.length} notes <ArrowRight size={14} aria-hidden="true" /></button>
           </div>
         </header>
@@ -724,7 +774,7 @@ export function GardenHome({ progress, navigate }) {
         </div>
       </section>
 
-      <GardenMapIntro navigate={navigate} />
+      <GardenKit navigate={navigate} />
 
       <section className="g-notes" aria-labelledby="g-notes-title">
         <header className="g-section-head">
@@ -810,7 +860,7 @@ export function GardenIndex({ progress, navigate, initialBed = 'all', resetProgr
       <header className="g-index-head">
         <p className="g-eyebrow">Index of notes · {availableLessons.length}</p>
         <h1>{'The Garden'}</h1>
-        <p className="g-index-head__deck">A collection of short PlainScript lessons, grouped into beds and always open. Read in order, or follow the question you have today.</p>
+        <p className="g-index-head__deck">Short lessons in six beds, always open. Read in order, or take the question you have today.</p>
         <div className="g-index-head__meta">
           <div className="g-index-head__place">
             <span className="g-eyebrow">{'Your place'}</span>

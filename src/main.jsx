@@ -874,8 +874,9 @@ function LessonPage({ lesson, navigate, progress, completeLesson, completeChalle
   const contents = [
     ['overview', 'What you will learn'],
     ['idea', 'The idea'],
-    ['predict', 'Guess what it prints'],
-    ['try-it', 'Try it yourself'],
+    ['code', 'The code and its output'],
+    ['predict', 'Guess the output'],
+    ['try-it', 'Change and run'],
     ['words', 'The words, close up'],
     ['mistakes', 'Common mistakes'],
   ];
@@ -930,7 +931,7 @@ function LessonPage({ lesson, navigate, progress, completeLesson, completeChalle
 
       <aside className="g-audience">
         <span className="g-eyebrow">Assumed audience</span>
-        <p>Someone who can use a browser and is happy to read carefully. No prior PlainScript, and no installation, is required.</p>
+        <p>No PlainScript and no installation needed. A browser and eight minutes are enough.</p>
       </aside>
 
       <div className="lesson-grid">
@@ -977,15 +978,23 @@ function LessonPage({ lesson, navigate, progress, completeLesson, completeChalle
             </aside>
           )}
 
+          <section className="lesson-sec" id="code">
+            <h2 className="sec-title"><span>03</span>The code</h2>
+            <CodeSpecimen code={lesson.example} label="plainscript" file={`${lesson.id}.pln`} />
+            {lesson.expectedOutput
+              ? <p className="lesson-output"><span>Output</span><code>{lesson.expectedOutput}</code></p>
+              : <p className="specimen-note">This one runs inside a React project, so it has no console output.</p>}
+          </section>
+
           <section className="lesson-sec" id="predict">
-            <h2 className="sec-title"><span>03</span>Guess what it prints</h2>
-            <p className="prose">Before you run it, write down what you think the program will print. Guessing first is how the idea sticks.</p>
+            <h2 className="sec-title"><span>04</span>Guess the output</h2>
+            <p className="prose">Write your guess first. Being wrong here is the fastest way to remember.</p>
             <PredictRun lesson={lesson} />
           </section>
 
           <section className="lesson-sec" id="try-it">
-            <h2 className="sec-title"><span>04</span>Try it yourself</h2>
-            <p className="prose">Now change the example. Run it as many times as you like — the compiler is the honest one here.</p>
+            <h2 className="sec-title"><span>05</span>Change and run</h2>
+            <p className="prose">Change one line, run it, and read what the compiler says.</p>
             {lesson.expectedOutput
               ? <TryIt lesson={lesson} />
               : (
@@ -997,7 +1006,7 @@ function LessonPage({ lesson, navigate, progress, completeLesson, completeChalle
           </section>
 
           <section className="lesson-sec" id="words">
-            <h2 className="sec-title"><span>05</span>The words, close up</h2>
+            <h2 className="sec-title"><span>06</span>The words, close up</h2>
             <div className="syntax-list">
               {lesson.syntax.map(([term, description]) => (
                 <div className="syntax-row" key={term}>
@@ -1009,7 +1018,7 @@ function LessonPage({ lesson, navigate, progress, completeLesson, completeChalle
           </section>
 
           <section className="lesson-sec" id="mistakes">
-            <h2 className="sec-title"><span>06</span>Common mistakes</h2>
+            <h2 className="sec-title"><span>07</span>Common mistakes</h2>
             <ul className="mistakes">
               {lesson.commonMistakes.map((mistake) => <li key={mistake}><Inline text={mistake} /></li>)}
             </ul>
@@ -1042,6 +1051,10 @@ function LessonPage({ lesson, navigate, progress, completeLesson, completeChalle
             <p>{progress.completedLessons.length} of {availableLessons.length} lessons finished</p>
             <Meter value={Math.round((progress.completedLessons.length / availableLessons.length) * 100)} />
           </div>
+          <div className="margin-card">
+            <span className="margin-label">Take it with you</span>
+            <a className="margin-download" href="/plainscript-quick-reference.html" download="plainscript-quick-reference.html">One-page cheat sheet · download</a>
+          </div>
           {bed && (
             <div className="margin-card">
               <span className="margin-label">Tended in</span>
@@ -1056,7 +1069,7 @@ function LessonPage({ lesson, navigate, progress, completeLesson, completeChalle
         <div className="exercises-head">
           <p className="eyebrow">The bench</p>
           <h2>Your turn <em>at the desk.</em></h2>
-          <p>One small program to change and one question to answer. Your work stays in this browser; nothing is sent anywhere except the program you choose to run.</p>
+          <p>One program to change and one question to answer. Everything stays in this browser.</p>
         </div>
         <div className="exercise-panels">
           <LessonPractice lesson={lesson} progress={progress} completeChallenge={completeChallenge} />
@@ -1070,7 +1083,7 @@ function LessonPage({ lesson, navigate, progress, completeLesson, completeChalle
         <PressMark size={22} />
         <div>
           <b>{isComplete ? 'Lesson finished.' : 'Finished reading?'}</b>
-          <p>{isComplete ? 'Saved in this browser. You can always read it again.' : 'Mark the lesson when the idea feels clear. You can undo it by resetting your progress on the contents page.'}</p>
+          <p>{isComplete ? 'Saved in this browser. Read it again any time.' : 'Mark it finished when the idea feels clear. You can undo this on the contents page.'}</p>
         </div>
         {!isComplete
           ? <button type="button" className="button button--ink button--small" onClick={() => completeLesson(lesson.id)}>Mark as finished</button>
