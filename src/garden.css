@@ -1363,9 +1363,16 @@ button { font-family: inherit; }
   text-transform: uppercase;
   color: var(--g-accent);
 }
-/* On the night sheet the plate keeps its own light-paper light: lift the
-   midtones so the drawing is still readable, without a bright card. */
-:root[data-theme="dark"] .plain-words__plate img { filter: brightness(1.18) saturate(1.04) contrast(1.02); }
+/* The plate is drawn on warm paper, and its pale washes are partly the paper
+   showing through. On the night sheet it keeps that paper, so the drawing
+   reads as a printed plate instead of a red smudge on the dark. */
+:root[data-theme="dark"] .plain-words__plate {
+  background: #f7f4ec;
+  padding: 9px 9px 10px;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+}
+:root[data-theme="dark"] .plain-words__plate figcaption { color: #56513f; }
 @media (max-width: 720px) {
   .plain-words { grid-template-columns: minmax(0, 1fr); gap: 0.9rem; align-items: start; }
   .plain-words__plate { max-width: 230px; }
