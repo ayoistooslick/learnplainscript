@@ -948,9 +948,32 @@ function LessonPage({ lesson, navigate, progress, completeLesson, completeChalle
           </section>
 
           {plainWords[lesson.id] && (
-            <aside className="pullquote" aria-label="In plain words">
-              <span className="pullquote__label">In plain words</span>
-              <p><Inline text={plainWords[lesson.id]} /></p>
+            <aside className={`plain-words${lesson.plate ? '' : ' plain-words--copy-only'}`} aria-label="In plain words">
+              {lesson.plate && (
+                <figure className="plain-words__plate">
+                  <img
+                    src={lesson.plate.src}
+                    alt={lesson.plate.alt}
+                    width="440"
+                    height="330"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <figcaption>{lesson.plate.caption}</figcaption>
+                </figure>
+              )}
+              <div className="plain-words__copy">
+                <div className="pullquote">
+                  <span className="pullquote__label">In plain words</span>
+                  <p><Inline text={plainWords[lesson.id]} /></p>
+                </div>
+                {lesson.keeper && (
+                  <p className="plain-words__keeper">
+                    <span>Remember this</span>
+                    <Inline text={lesson.keeper} />
+                  </p>
+                )}
+              </div>
             </aside>
           )}
 

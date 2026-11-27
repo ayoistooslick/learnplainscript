@@ -1324,6 +1324,52 @@ button { font-family: inherit; }
 .pullquote { border-color: var(--g-rule-strong); }
 .pullquote__label { color: var(--g-accent); }
 .pullquote p { color: var(--g-ink); }
+
+/* A lesson's plate: the idea drawn as a person doing something, set beside
+   the plain words it explains. */
+.plain-words {
+  display: grid;
+  grid-template-columns: minmax(0, 250px) minmax(0, 1fr);
+  gap: clamp(1.1rem, 2.6vw, 2rem);
+  align-items: start;
+  margin: 2.2rem 0;
+}
+.plain-words--copy-only { grid-template-columns: minmax(0, 1fr); }
+.plain-words__copy { min-width: 0; }
+.plain-words .pullquote { margin: 0; }
+.plain-words__plate { margin: 0.15rem 0 0; }
+.plain-words__plate img { display: block; width: 100%; height: auto; }
+.plain-words__plate figcaption {
+  margin-top: 0.5rem;
+  font-family: var(--font-ui);
+  font-size: 10px;
+  line-height: 1.45;
+  color: var(--g-ink-faint);
+}
+.plain-words__keeper {
+  margin: 1rem 0 0;
+  font-family: var(--font-body);
+  font-size: 16.5px;
+  line-height: 1.55;
+  color: var(--g-ink);
+}
+.plain-words__keeper > span {
+  display: block;
+  margin-bottom: 0.22rem;
+  font-family: var(--font-ui);
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--g-accent);
+}
+/* On the night sheet the plate keeps its own light-paper light: lift the
+   midtones so the drawing is still readable, without a bright card. */
+:root[data-theme="dark"] .plain-words__plate img { filter: brightness(1.18) saturate(1.04) contrast(1.02); }
+@media (max-width: 720px) {
+  .plain-words { grid-template-columns: minmax(0, 1fr); gap: 0.9rem; align-items: start; }
+  .plain-words__plate { max-width: 230px; }
+}
 .syntax-list { border-top: 1px solid var(--g-rule); }
 .syntax-row { border-bottom: 1px solid var(--g-rule); }
 .syntax-term { color: var(--g-moss); }

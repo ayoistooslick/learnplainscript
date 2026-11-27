@@ -22,7 +22,7 @@ export const chapters = [
     lessons: [starter(
       'why-plainscript',
       'Why PlainScript reads differently',
-      'PlainScript is a statically typed language for the JavaScript platform. Its 2.1 surface chooses one readable spelling per concept, then compiles to ordinary ES modules.',
+      'PlainScript is a checked language for the JavaScript platform. Each idea has one readable spelling, and the program compiles to ordinary JavaScript modules.',
       ['Recognise PlainScript as its own language, not renamed JavaScript.', 'Read the 2.1 dialect markers used throughout the course.', 'Understand that the compiler checks before execution.'],
       'The useful distinction is not that PlainScript is “English JavaScript”. It has its own grammar, blocks that close with `end`, records, variants, optional values, and a checker. The output is ordinary JavaScript modules, so the language can still use the JavaScript ecosystem.',
       [['`#syntax 2.1`', 'Opt into the readable 2.1 dialect.'], ['`value` and `set`', 'Declare immutable and mutable bindings.'], ['`end`', 'Close a named block explicitly.']],
@@ -38,7 +38,7 @@ export const chapters = [
     lessons: [starter(
       'first-program',
       'Your first program',
-      'A PlainScript file can import a standard-library function, define a function, and run it without ceremony.',
+      'One file, four short steps: bring in a printing tool, define a function, call it, and read the line it prints.',
       ['Use an import from the standard library.', 'Define a function with a return type.', 'Run a complete program from top to bottom.'],
       'A 2.1 program is read in the same order that it executes. `define` introduces a function, its parameters carry types, and `returns` makes the output contract visible. Interpolated strings use braces inside a quoted string.',
       [['`define greet(name: text) returns text`', 'A typed function declaration.'], ['`return`', 'Leave a function with a value.'], ['`print(...)`', 'Write a value to standard output.']],
@@ -54,7 +54,7 @@ export const chapters = [
     lessons: [starter(
       'syntax-structure',
       'Blocks that read to the end',
-      'PlainScript uses `end` to make the shape of a block visible. That makes nested code easier to scan and gives compiler errors a clear boundary.',
+      'A block opens with a word and closes with `end`, so you can see where it stops without counting braces.',
       ['Close functions and conditions with `end`.', 'Use comments to explain decisions, not obvious lines.', 'Use interpolation for small readable messages.'],
       'The 2.1 dialect changes the words that make a program read aloud, but it keeps familiar words such as `when`, `match`, `try`, `async`, `await`, `import`, and `export`. A file can opt in with `#syntax 2.1` or a project configuration.',
       [['`when condition`', 'Start a conditional block.'], ['`otherwise`', 'Handle the remaining branch.'], ['`"Hello, {name}"`', 'Interpolate a value into text.']],
@@ -70,7 +70,7 @@ export const chapters = [
     lessons: [starter(
       'values',
       'Values, state, and change',
-      'PlainScript distinguishes an immutable value from a binding that is allowed to change. The words make state changes easy to find in a code review.',
+      'Two words tell you whether a name can change: a `value` is sealed, and a `set` can be moved with `change`.',
       ['Declare an immutable value with `value`.', 'Declare mutable state with `set`.', 'Update state with `change`.'],
       'Use `value total is 3` when the binding should not be reassigned. Use `set count to 0` when a later `change count to ...` is part of the design. This is a language-level distinction, not a comment convention.',
       [['`value total is 3`', 'An immutable binding.'], ['`set count to 0`', 'A mutable binding.'], ['`change count to count + 1`', 'An explicit state update.']],
@@ -86,7 +86,7 @@ export const chapters = [
     lessons: [starter(
       'types',
       'Types without ceremony',
-      'PlainScript checks a program before it runs. You can let the checker infer a clear type or write an annotation where a contract matters.',
+      'A type says what kind of thing a value is. The checker works it out before the program runs, and you can write it down where it matters.',
       ['Read inferred number and text values.', 'Add a type annotation to a binding.', 'Understand why a type error is useful before execution.'],
       'The checker tracks values, function parameters, return types, records, unions, and optional values. Types are erased from the emitted module; the safety benefit happens before runtime.',
       [['`value score is 42`', 'The checker infers `number`.'], ['`value label: text is "ready"`', 'An explicit annotation.'], ['`returns number`', 'A function output contract.']],
@@ -102,7 +102,7 @@ export const chapters = [
     lessons: [starter(
       'operators',
       'Expressions that say what they mean',
-      'Arithmetic keeps familiar symbols. Comparisons use readable phrases such as `is at least`, `is equal to`, and `is not` in the 2.1 dialect.',
+      'Arithmetic keeps its symbols. Comparisons are spoken aloud: `is at least`, `is equal to`, `is not`.',
       ['Combine numbers into expressions.', 'Use readable comparisons.', 'Read a pipeline as a sequence of transformations.'],
       'PlainScript keeps the parts that are already clear in JavaScript and changes the parts that benefit from a spoken form. This keeps expressions compact without making the language a collection of aliases.',
       [['`left + right`', 'Numeric addition.'], ['`score is at least 80`', 'A readable comparison.'], ['`value result is input |> trim`', 'A pipeline into a function.']],
@@ -118,7 +118,7 @@ export const chapters = [
     lessons: [starter(
       'control-flow',
       'When, otherwise, and each',
-      'Control flow is built from readable branches and loops. The block structure stays explicit so nested decisions remain legible.',
+      '`when` picks one path, `otherwise` catches the rest, and `for each` walks a list one item at a time.',
       ['Write a `when` branch with an `otherwise` branch.', 'Use `for each` for collection iteration.', 'Recognise `match` as the exhaustive variant tool.'],
       'Use `when` for a boolean decision. Use `for each item in items` when the collection itself is the important thing. `for i from 0 to 9` is available when an index or range is the right model.',
       [['`when ... otherwise ... end`', 'Branch on a condition.'], ['`for each item in items`', 'Visit every collection item.'], ['`match value ... end`', 'Select an exhaustive variant case.']],
@@ -134,7 +134,7 @@ export const chapters = [
     lessons: [starter(
       'functions',
       'Functions as contracts',
-      'A PlainScript function makes its inputs and output part of the declaration. That keeps the implementation small and the boundary clear.',
+      'A function is a named piece of work: name the inputs, name the output, and keep the body short enough to read in one go.',
       ['Define a typed function.', 'Return a value from a block.', 'Use a function as a value in a collection transformation.'],
       'Functions can be generic, asynchronous, and exported from a module. Start with a narrow contract. The checker can infer a local binding, but the public return type tells the next reader what to expect.',
       [['`define add(left: number, right: number) returns number`', 'A typed function contract.'], ['`return`', 'Produce the result.'], ['`export define`', 'Make a declaration available to imports.']],
@@ -150,7 +150,7 @@ export const chapters = [
     lessons: [starter(
       'records',
       'Records that carry meaning',
-      'A record type names the shape of data. PlainScript uses structural records, so a value is useful when it has the fields a function needs.',
+      'A record is a form with named boxes. Any value with the right boxes fits, so you need no class or constructor to describe it.',
       ['Declare a record type.', 'Create a record value.', 'Read a field with dot notation.'],
       'Records are useful when a group of values belongs together. The type declaration is short, and functions can accept records without a class hierarchy or constructor ceremony.',
       [['`type Person ... end`', 'Declare a record shape.'], ['`{ name: "Ada", age: 36 }`', 'Create a record value.'], ['`person.name`', 'Read a record field.']],
@@ -166,7 +166,7 @@ export const chapters = [
     lessons: [starter(
       'iteration',
       'Lists, filters, and maps',
-      'Collections become useful when you can express the transformation you want. PlainScript’s list helpers work with typed functions and pipelines.',
+      'A list holds many values. `map` changes every item once and hands back a new list; `filter` keeps the ones you want.',
       ['Create a typed list.', 'Use a `for each` loop.', 'Recognise `filter`, `map`, and `sum` as standard-library tools.'],
       'A pipeline reads from left to right. You can use a loop when the steps are procedural or a pipeline when each step is a small transformation. Both remain ordinary compiled JavaScript at runtime.',
       [['`list of text`', 'A list whose items are text.'], ['`filter(values, predicate)`', 'Keep matching items.'], ['`map(values, transform)`', 'Create one value for each item.']],
@@ -182,7 +182,7 @@ export const chapters = [
     lessons: [starter(
       'modules',
       'Modules that stay ordinary',
-      'PlainScript modules compile to ES modules. Imports, exports, re-exports, and declared local runtimes work with the JavaScript ecosystem.',
+      'A module is one file. `export` hands something out, `import` takes it in, and the result is an ordinary JavaScript module.',
       ['Import a standard-library function.', 'Recognise exported declarations.', 'Understand that modules compile to ordinary ES modules.'],
       'A module boundary is a design decision. Export a function or type when another file needs it, then keep implementation details local. PlainScript 2.3.1 fixes value re-exports and declared local runtimes while keeping the output conventional.',
       [['`import { print } from "std/io"`', 'Import a named binding.'], ['`export define ...`', 'Export a function.'], ['`export type ...`', 'Export a type contract.']],
@@ -198,7 +198,7 @@ export const chapters = [
     lessons: [starter(
       'errors',
       'Failure is part of the contract',
-      'PlainScript keeps familiar `try`, `catch`, and `finally` words. Use them when a runtime operation can fail, and use optional values when absence is a normal result.',
+      'Some things fail while the program is running. `try` and `catch` plan for that, and `nothing` says a value may simply be absent.',
       ['Identify a failure boundary.', 'Recognise `nothing` as an optional value.', 'Narrow an optional before using it.'],
       'The type system distinguishes a value that may be absent from a value that is always present. A function returning `number?` can return `nothing`, and the caller must narrow it before treating it as a number.',
       [['`T?`', 'An optional value.'], ['`return nothing`', 'Return absence explicitly.'], ['`when value is number`', 'Narrow before use.']],
@@ -214,7 +214,7 @@ export const chapters = [
     lessons: [starter(
       'async',
       'Asynchronous work',
-      'PlainScript keeps `async` and `await` because they already describe asynchronous control flow clearly. The checker still tracks the function boundary.',
+      'Some work finishes later. `async` marks the function, and `await` is the pause before the answer arrives.',
       ['Recognise an async function boundary.', 'Use `await` for a promise-like result.', 'Keep asynchronous work inside a small function.'],
       'Async PlainScript compiles to ordinary JavaScript async functions. The language does not invent a new runtime; it gives the existing platform a checked, readable surface.',
       [['`async define`', 'Declare an asynchronous function.'], ['`await`', 'Wait for an async result.'], ['`returns`', 'Document the resolved value type.']],
@@ -230,7 +230,7 @@ export const chapters = [
     lessons: [starter(
       'regex',
       'Native regular expressions',
-      'PlainScript 2.3.1 treats regular-expression literals as a language feature. Patterns are validated and emitted as native `RegExp` values.',
+      'A regular expression is a stencil for text: describe the shape you want, and only matching strings pass through.',
       ['Recognise a regex literal.', 'Keep the pattern close to the validation rule.', 'Know that regex helpers live in the standard library.'],
       'Regex is useful when the pattern is the clearest expression of a rule. Keep the pattern small, name the surrounding function, and add a normal test for an edge case.',
       [['`/pattern/flags`', 'A native regular-expression literal.'], ['`captures`', 'Read matched groups from a result.'], ['`std/text`', 'Typed text and regex helpers.']],
@@ -246,7 +246,7 @@ export const chapters = [
     lessons: [starter(
       'jsx',
       'JSX without a second language',
-      'PlainScript 2.3.1 parses JSX natively in `.pln` files. Components can keep typed props while compiling to React’s ordinary element calls.',
+      'JSX is markup written inside PlainScript. A component keeps its typed props and compiles to ordinary React element calls.',
       ['Recognise a PlainScript component boundary.', 'Read JSX as part of a `.pln` file.', 'Understand the classic and automatic runtime choices.'],
       'The compiler supports classic `createElement` and automatic `jsx-runtime` modes. React’s own types remain at the boundary, while PlainScript can still check a component’s record-shaped props.',
       [['`return <p>...</p>`', 'Return a JSX element.'], ['`returns any`', 'The common React boundary type.'], ['`@jsxRuntime automatic`', 'Select the automatic runtime.']],
@@ -262,7 +262,7 @@ export const chapters = [
     lessons: [starter(
       'react',
       'React is still React',
-      'PlainScript components compile to the same React APIs used by JavaScript applications. Hooks, context, refs, suspense, and third-party components remain available at the boundary.',
+      'PlainScript components are React components. Hooks, context, refs, suspense and third-party parts all still work at the boundary.',
       ['Explain the PlainScript-to-React boundary.', 'Recognise component props as a record contract.', 'Keep framework configuration at the integration edge.'],
       'This is where interoperability is useful: PlainScript owns the component source and its local contracts, while React owns rendering and the broader ecosystem. There is no new runtime to learn.',
       [['`import { createElement } from "react"`', 'Use the classic runtime.'], ['`props: { ... }`', 'Describe component inputs.'], ['`react/jsx-runtime`', 'Use automatic JSX output.']],
@@ -278,7 +278,7 @@ export const chapters = [
     lessons: [starter(
       'interop',
       'Use the platform you already have',
-      'PlainScript is designed to use React, Vite, Express, Node built-ins, and npm packages directly. Interoperability is a boundary, not a rewrite of the ecosystem.',
+      'The output is ordinary JavaScript, so npm packages, Node built-ins and browser features work exactly as they always did.',
       ['Explain why compiled ES modules matter.', 'Recognise a JavaScript package as an integration boundary.', 'Keep unchecked edges small and explicit.'],
       'The compiler’s job is to make PlainScript source safe and readable while leaving the output ordinary. At a JavaScript boundary, give the imported value a narrow wrapper or contract instead of spreading `any` through the application.',
       [['`import ... from "package"`', 'Use a package through ES modules.'], ['Interop boundary', 'Keep unchecked values near the edge.'], ['Generated bindings', 'Create clients for supported interfaces.']],
@@ -294,7 +294,7 @@ export const chapters = [
     lessons: [starter(
       'bridges',
       'A bridge is a boundary',
-      'PlainScript 2.3.1 includes JSON-RPC bridges and client generation for several languages. The goal is explicit contracts, not magical cross-language calls.',
+      'A bridge lets two languages talk over JSON-RPC. Both ends agree on the message; nothing crosses by magic.',
       ['Recognise JSON-RPC as the bridge protocol.', 'Keep a bridge manifest explicit.', 'Understand why the remote process needs its own limits and contract.'],
       'A bridge service should have a narrow interface, stable input and output shapes, and clear failure behavior. PlainScript can serve or call a bridge, while another language remains free to implement its side.',
       [['`std/bridge`', 'Call a supported bridge from PlainScript.'], ['JSON-RPC 2.0', 'The message protocol.'], ['Manifest', 'The declared service surface.']],
@@ -310,7 +310,7 @@ export const chapters = [
     lessons: [starter(
       'classes',
       'Classes with real semantics',
-      'PlainScript 2.3 adds classes, constructors, methods, `this`, inheritance, `super`, static members, and readonly fields. They compile to native JavaScript classes.',
+      'A class keeps data and the methods that change it in one place. `this` means the instance in hand.',
       ['Define a class with a constructor and method.', 'Use `this` to read and update instance state.', 'Recognise when a class is clearer than a record and function.'],
       'Classes are useful when state and the operations that change it belong together. The compiler checks the constructor and method contracts before emitting a normal JavaScript class. Prefer a record plus functions when the data has no lifecycle.',
       [['`class Counter`', 'Declare a class boundary.'], ['`constructor(...)`', 'Initialise an instance.'], ['`function next() -> number`', 'Declare a typed method.']],
@@ -321,7 +321,7 @@ export const chapters = [
     ), starter(
       'generators',
       'Generators and lazy iteration',
-      'A generator produces values one at a time. PlainScript 2.3 gives generators a checked yield type and an iterator protocol that works with `for`.',
+      'A generator makes one value at a time, only when asked, instead of building the whole list in memory first.',
       ['Declare a generator function.', 'Yield values lazily with `yield`.', 'Consume an iterator with `for`.'],
       'Generators are a good fit for sequences that should not be built in memory all at once. The annotation describes each yielded element, while the call produces an iterator of that type.',
       [['`generator function`', 'Declare a lazy producer.'], ['`yield`', 'Return one item and pause.'], ['`for item in ...`', 'Consume an iterator.']],
@@ -338,7 +338,7 @@ export const chapters = [
     lessons: [starter(
       'typed-errors',
       'Typed errors and recovery',
-      'PlainScript 2.3 lets a function declare the error class it may throw. A typed catch narrows the error and rethrows values that do not match.',
+      'Say which error a function may throw. `catch` then handles that one kind and lets everything else stay loud.',
       ['Create an error class with useful fields.', 'Declare a `throws` contract.', 'Catch the declared type without hiding unrelated failures.'],
       'A failure is part of an API contract when callers need to recover from it deliberately. Use a specific error class for a recoverable condition, and keep unexpected errors visible by allowing them to rethrow.',
       [['`throws AppError`', 'Declare the failure type.'], ['`throw new AppError(...)`', 'Raise a typed failure.'], ['`catch error: AppError`', 'Handle only the declared class.']],
@@ -349,7 +349,7 @@ export const chapters = [
     ), starter(
       'toolchain',
       'From source to a tested package',
-      'A serious PlainScript project uses the compiler feedback loop: check source, format it, build modules, run tests, and bundle only when the deployment boundary needs one module.',
+      'Check, test, build, ship. Each step catches a different problem, and bundling comes last.',
       ['Separate checking from execution.', 'Recognise build, test, format, and bundle as different jobs.', 'Keep package and platform boundaries explicit.'],
       'PlainScript 2.3 adds an incremental build cache, a bundler, an optimiser, and stronger TypeScript declaration import. The standard library also adds iterators, reflection, BigInt, environment access, process, crypto, compression, streams, workers, and networking. Database, HTTP, files, JSON, and package work still cross a deliberate Node or browser boundary; teach those integrations with the installed driver and the project’s tests rather than pretending they are portable everywhere.',
       [['`plainscript check`', 'Type-check without running.'], ['`plainscript build`', 'Emit modules and declarations.'], ['`plainscript bundle`', 'Emit one ESM deployment artifact.']],
@@ -361,7 +361,112 @@ export const chapters = [
   },
 ];
 
-export const lessons = chapters.flatMap((chapter) => chapter.lessons.map((lesson) => ({ ...lesson, chapter: chapter.title, chapterNumber: chapter.number })));
+/* One line per lesson that a reader can carry away. Keepers are deliberately
+   concrete: a jar, a hatch, a stencil, a basket. */
+export const lessonKeepers = {
+  'why-plainscript': 'Read it aloud. If it sounds like a sentence, it is PlainScript.',
+  'first-program': 'A program runs the way you read it: top to bottom, one line at a time.',
+  'syntax-structure': 'Every block tells you where it stops: `end` is the full stop.',
+  'values': '`value` is a sealed jar. `set` has a lid you can lift with `change`.',
+  'types': 'A type is the shape of the hole: only the right shape goes through.',
+  'operators': 'Symbols for arithmetic, spoken words for comparisons, as in `is at least`.',
+  'control-flow': '`when` chooses a path; `for each` walks every item along it.',
+  'functions': 'A function is a promise: name what goes in, name what comes out.',
+  'records': 'A record is a form: the same labelled boxes, in the same order, every time.',
+  'iteration': '`map` touches every item once and hands you a fresh list.',
+  'modules': '`export` hands it through the hatch; `import` receives it.',
+  'errors': 'Plan the catch before the fall: `try`, then `catch`.',
+  'async': '`await` is the pause before the answer arrives.',
+  'regex': 'A regex is a stencil for text: only the matching shapes fall through.',
+  'jsx': 'Markup and logic in the same pair of hands: JSX is part of the language.',
+  'react': 'React does the redrawing; your component only says what it looks like.',
+  'interop': 'Shake hands over the fence; you do not have to rebuild the neighbourhood.',
+  'bridges': 'A bridge is a contract: one message shape, agreed at both ends.',
+  'classes': 'A class is the toolbox: the data and the hands that work on it, together.',
+  'generators': 'A generator hands you one ticket, then waits to be asked again.',
+  'typed-errors': 'Name the error you expect; let the unexpected ones stay loud.',
+  'toolchain': 'Check, test, build, ship: four small steps, always in that order.',
+};
+
+/* A hand-inked plate for every lesson: the idea as a person doing something
+   small and physical, sitting beside the plain words that explain it. */
+const plate = (id, alt, caption) => ({ src: `/images/lessons/${id}.webp`, alt, caption });
+export const lessonPlates = {
+  'why-plainscript': plate('why-plainscript',
+    'A person in a linen shirt reading a single sheet of paper aloud, holding it up to the light.',
+    'Reading a line aloud, the way PlainScript asks to be read.'),
+  'first-program': plate('first-program',
+    'A printer lifting a fresh sheet off a small hand press and reading its first line.',
+    'The first sheet off the press: a program, read top to bottom.'),
+  'syntax-structure': plate('syntax-structure',
+    'A person kneeling to press the latch shut on a plain wooden crate.',
+    'Closing the lid: what `end` looks like in the hand.'),
+  'values': plate('values',
+    'A person at a shelf holding a jar sealed with wax and cord, a second open jar beside it.',
+    'One jar sealed, one with its lid off: `value` and `set`.'),
+  'types': plate('types',
+    'A person holding a wooden shape against a crate lid pierced with matching cut-out holes.',
+    'Sorting by shape: a type is the hole an idea has to fit.'),
+  'operators': plate('operators',
+    'A person steadying a wooden balance scale that holds two small sacks.',
+    'A balance asks two weights the question a comparison asks.'),
+  'control-flow': plate('control-flow',
+    'A person at a fork in a garden path lifting a hand towards one of two blank signposts.',
+    'Two paths and one choice: `when` picks, `for each` keeps walking.'),
+  'functions': plate('functions',
+    'A person at a workbench holding two ingredients over a bowl, a wrapped parcel waiting in a tray.',
+    'Two ingredients in, one parcel out: the shape of a function.'),
+  'records': plate('records',
+    'A person at a desk filling in a paper form divided into neat empty boxes.',
+    'A form with labelled boxes: the shape of a record.'),
+  'iteration': plate('iteration',
+    'A person stamping each passing item on a short conveyor belt, finished items stacked to one side.',
+    'The same motion, item after item: what `map` does.'),
+  'modules': plate('modules',
+    'A person passing a folder through a wooden hatch to hands on the far side of a wall.',
+    'Handing a folder through the hatch: `export` and `import`.'),
+  'errors': plate('errors',
+    'A person holding out a wide cloth like a net to catch a basket tipping above them.',
+    'The catch is planned before the fall.'),
+  'async': plate('async',
+    'A person posting a letter into a mailbox while a kettle steams on a bench behind them.',
+    'A letter posted, a kettle on: work that finishes later.'),
+  'regex': plate('regex',
+    'A person holding a brass stencil over a tray of mixed letters, a few small pieces falling through.',
+    'A stencil for text: only the matching shapes fall through.'),
+  'jsx': plate('jsx',
+    'A person assembling a wooden picture frame from precut pieces, checking the join.',
+    'Pieces cut to fit together: JSX inside the language.'),
+  'react': plate('react',
+    'A person on a low ladder changing one blank sliding tile on a facade of many tiles.',
+    'One tile changed: React redraws, the page stays put.'),
+  'interop': plate('interop',
+    'Two people shaking hands across a low wooden fence, one holding a toolbox, the other a rolled plan.',
+    'Two toolboxes, one fence: the JavaScript platform.'),
+  'bridges': plate('bridges',
+    'Two people on opposite banks of a stream passing a woven basket over a rope footbridge.',
+    'A basket over the stream: a bridge with a contract.'),
+  'classes': plate('classes',
+    'A person lifting the lid of a wooden toolbox holding small tools and a folded card.',
+    'The tools and the hands that use them, kept together.'),
+  'generators': plate('generators',
+    'A person pulling one paper ticket from a small brass dispenser, more still inside.',
+    'One ticket at a time, on request.'),
+  'typed-errors': plate('typed-errors',
+    'A person opening one drawer of a tall cabinet of small plain drawers, the rest closed.',
+    'One named drawer, opened on purpose.'),
+  'toolchain': plate('toolchain',
+    'A person carrying a wooden crate up four low stone steps, a handcart waiting below.',
+    'Four steps, in order: check, test, build, ship.'),
+};
+
+export const lessons = chapters.flatMap((chapter) => chapter.lessons.map((lesson) => ({
+  ...lesson,
+  chapter: chapter.title,
+  chapterNumber: chapter.number,
+  keeper: lessonKeepers[lesson.id],
+  plate: lessonPlates[lesson.id],
+})));
 export const availableLessons = lessons.filter((lesson) => !lesson.comingSoon);
 
 /* One-sentence summaries for readers who are new to code. These sit at the
